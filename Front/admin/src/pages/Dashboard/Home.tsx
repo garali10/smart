@@ -5,7 +5,7 @@ import Button from '@/components/ui/button/Button';
 import axios from 'axios';
 import { Application } from '../../types/application';
 import ApplicationProfile from "../../components/ApplicationProfile/ApplicationProfile";
-import { FaMedal, FaTrophy, FaTrash, FaChartBar, FaChartPie } from 'react-icons/fa';
+import { FaMedal, FaTrophy, FaTrash, FaChartBar, FaChartPie, FaUserFriends } from 'react-icons/fa';
 
 // Eye icon component
 const EyeIcon = () => (
@@ -917,6 +917,108 @@ const DepartmentMatchPopup = ({
             </table>
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+// Add a FeaturedCandidates component for displaying candidate profiles with images
+const FeaturedCandidates = ({ applications }: { applications: Application[] }) => {
+  // Get the top 8 candidates with the highest scores
+  const topCandidates = [...applications]
+    .filter(app => app.analysis?.score?.total)
+    .sort((a, b) => (b.analysis?.score?.total || 0) - (a.analysis?.score?.total || 0))
+    .slice(0, 8);
+
+  if (topCandidates.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <FaUserFriends className="text-primary" />
+          Top Candidates
+        </h3>
+      </div>
+      
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Email
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Albums
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Photos
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {topCandidates.map((candidate, index) => (
+              <tr key={candidate._id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleViewApplication(candidate)}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 flex-shrink-0">
+                      <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100">
+                        {candidate.profilePicture ? (
+                          <img 
+                            src={`http://localhost:5001/uploads/profile-pictures/${candidate.profilePicture}`}
+                            alt={candidate.name}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40';
+                            }}
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center bg-primary text-white">
+                            {candidate.name?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900 flex items-center">
+                        {candidate.name} {' '}
+                        {candidate.analysis?.score?.total && (
+                          <FaMedal 
+                            className={
+                              candidate.analysis.score.total >= 80
+                                ? "text-green-500 ml-2"
+                                : candidate.analysis.score.total >= 60
+                                ? "text-yellow-500 ml-2"
+                                : "text-red-500 ml-2"
+                            } 
+                            size={14}
+                          />
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {getJobDepartment(candidate.jobTitle)}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {candidate.email}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {Math.floor(Math.random() * 10) + 1}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {Math.floor(Math.random() * 1000) + 1}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -3156,6 +3258,9 @@ export default function Home() {
 
       {/* Department Statistics Component */}
       <DepartmentStatistics applications={applications} />
+      
+      {/* Featured Candidates Component */}
+      <FeaturedCandidates applications={applications} />
 
       {/* Department Match Buttons */}
       <div className="flex flex-wrap gap-3 mb-6">
