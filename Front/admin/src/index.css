@@ -1,0 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-outfit;
+  }
+}
+
+/* Custom styles */
+.custom-calendar .fc-h-event {
+  background-color: transparent;
+  border: none;
+  color: black;
+}
+
+.fc.fc-media-screen {
+  @apply min-h-screen;
+}
+
+.simplebar-scrollbar::before {
+  @apply bg-gray-200 rounded-full dark:bg-gray-700 opacity-100;
+}
+
+.dark .simplebar-scrollbar::before {
+  @apply bg-gray-700;
+}
+
+.simplebar-scrollbar.simplebar-visible:before {
+  @apply opacity-100;
+}
+
+/* ... rest of your custom styles ... */

@@ -1,0 +1,207 @@
+.profile-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 3rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.profile-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin: 0 auto 2rem;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-avatar:hover .profile-avatar-overlay {
+  opacity: 1;
+}
+
+.camera-icon {
+  color: white;
+  font-size: 2rem;
+}
+
+.profile-name {
+  font-size: 2rem;
+  color: #333;
+  margin: 1rem 0;
+}
+
+.profile-role {
+  color: #666;
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 2rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #555;
+  font-size: 1.1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.info-icon {
+  color: #71c9ce;
+  font-size: 1.5rem;
+}
+
+/* MBTI Card Styles */
+.mbti-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.mbti-card h3 {
+  color: #4a5568;
+  font-size: 1.25rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.mbti-card.error {
+  border-left: 4px solid #e53e3e;
+}
+
+.mbti-card.not-taken {
+  border-left: 4px solid #3182ce;
+}
+
+.mbti-card.completed {
+  border-left: 4px solid #38a169;
+}
+
+.loading-indicator {
+  color: #718096;
+  font-style: italic;
+  margin: 15px 0;
+}
+
+.mbti-type-result {
+  margin: 20px 0;
+}
+
+.type-badge {
+  display: inline-block;
+  background-color: #805ad5;
+  color: white;
+  font-weight: bold;
+  font-size: 1.5rem;
+  padding: 8px 16px;
+  border-radius: 24px;
+  margin-bottom: 12px;
+}
+
+.type-description {
+  color: #4a5568;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.dimension-scores {
+  margin: 20px 0;
+}
+
+.dimension {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.dimension span {
+  flex: 0 0 30px;
+  font-weight: 600;
+  color: #718096;
+}
+
+.dimension span.highlighted {
+  color: #805ad5;
+  font-weight: bold;
+}
+
+.score-bar {
+  flex: 1;
+  display: flex;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 10px;
+}
+
+.bar {
+  height: 100%;
+}
+
+.bar.left {
+  background-color: #3182ce;
+}
+
+.bar.right {
+  background-color: #805ad5;
+}
+
+.btn--outline-purple {
+  color: #805ad5;
+  background-color: transparent;
+  border: 1px solid #805ad5;
+  border-radius: 4px;
+  padding: 8px 16px;
+  transition: all 0.2s;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.btn--outline-purple:hover {
+  background-color: #805ad5;
+  color: white;
+} 

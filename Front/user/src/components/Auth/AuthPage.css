@@ -1,0 +1,290 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400|Lora');
+
+:root {
+  --gray: #8E9AAF;
+  --lavender: #CBC0D3;
+  --pale: #57141e;
+  --white: #f6f6f6;
+  --pink: #d4939d;
+}
+
+.auth-container {
+  margin: auto;
+  display: flex;
+  width: 650px;
+  height: 550px;
+  position: relative;
+  margin-top: 50px;
+}
+
+.welcome {
+  background: var(--white);
+  width: 650px;
+  height: 435px;
+  position: absolute;
+  top: 25%;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px rgba(0,0,0,.1);
+}
+
+.pinkbox {
+  position: absolute;
+  top: -10%;
+  left: 5%;
+  background: var(--pale);
+  width: 320px;
+  height: 520px;
+  border-radius: 5px;
+  box-shadow: 2px 0 10px rgba(0,0,0,.1);
+  transition: all .5s ease-in-out;
+  z-index: 2;
+}
+
+.pinkbox.move-right {
+  transform: translateX(80%);
+}
+
+.nodisplay {
+  display: none;
+  transition: all .5s ease;
+}
+
+.leftbox, .rightbox {
+  position: absolute;
+  width: 50%;
+  transition: 1s all ease;
+}
+
+.leftbox { left: -2%; }
+.rightbox { right: -2%; }
+
+h1 {
+  font-family: 'Open Sans', sans-serif;
+  text-align: center;
+  margin-top: 95px;
+  text-transform: uppercase;
+  color: var(--white);
+  font-size: 2em;
+  letter-spacing: 8px;
+}
+
+.title {
+  font-family: 'Lora', serif;
+  color: var(--gray);
+  font-size: 1.8em;
+  line-height: 1.1em;
+  letter-spacing: 3px;
+  text-align: center;
+  font-weight: 300;
+  margin-top: 20%;
+}
+
+.desc {
+  margin-top: -8px;
+}
+
+.account {
+  margin-top: 45%;
+  font-size: 10px;
+}
+
+p {
+  font-family: 'Open Sans', sans-serif;
+  font-size: .7em;
+  letter-spacing: 2px;
+  color: var(--gray);
+  text-align: center;
+}
+
+span {
+  color: var(--pale);
+}
+
+.flower {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  top: 46%;
+  left: 29%;
+  opacity: .7;
+}
+
+.flower.smaller {
+  width: 90px;
+  height: 100px;
+  top: 48%;
+  left: 38%;
+  opacity: .9;
+}
+
+form {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding-top: 15px;
+}
+
+.more-padding {
+  padding-top: 25px;
+}
+
+.button {
+  padding: 12px;
+  font-family: 'Open Sans', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 11px;
+  border-radius: 10px;
+  margin: auto;
+  outline: none;
+  display: block;
+  background: var(--white);
+  color: var(--pink);
+  border: solid 1px var(--pale);
+  margin-top: 3%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.button:hover {
+  background: var(--pale);
+  color: var(--white);
+}
+
+.submit {
+  margin-top: 15px;
+  padding: 12px;
+  border-color: var(--pink);
+}
+
+.submit:hover {
+  background: var(--lavender);
+  border-color: var(--lavender);
+}
+
+.input-group {
+  width: 65%;
+  margin: 5px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.input-group label {
+  color: var(--white);
+  margin-bottom: 3px;
+  font-size: 0.8em;
+  letter-spacing: 1px;
+}
+
+.input-group input {
+  width: 100%;
+}
+
+input {
+  background: var(--pale);
+  width: 100%;
+  color: var(--pink);
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 8px;
+  margin: 5px;
+  font-size: 1em;
+  transition: all 0.3s ease;
+}
+
+input::placeholder {
+  color: white;
+  letter-spacing: 2px;
+  font-size: 1.3em;
+  font-weight: 100;
+}
+
+input:focus {
+  color: var(--pink);
+  outline: none;
+  border-bottom: 1.2px solid var(--pink);
+}
+
+input:focus::placeholder {
+  opacity: 0;
+}
+
+.checkbox {
+  display: inline;
+  white-space: nowrap;
+  position: relative;
+  left: -62px;
+  top: 5px;
+}
+
+input[type=checkbox] {
+  width: 7px;
+  background: var(--pink);
+}
+
+label {
+  font-family: 'Open Sans', sans-serif;
+  color: var(--pink);
+  font-size: 0.8em;
+  letter-spacing: 1px;
+}
+
+.checkbox input[type="checkbox"]:checked + label {
+  color: var(--pink);
+  transition: .5s all ease;
+}
+
+.select-input {
+  background: var(--pale);
+  width: 65%;
+  color: var(--pink);
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 8px;
+  margin: 5px;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.select-input option {
+  background: var(--white);
+  color: var(--pink);
+}
+
+input[type="date"] {
+  color-scheme: light;
+}
+
+input[type="date"]::placeholder {
+  color: white;
+}
+
+.signup form {
+  padding-top: 7px;
+}
+
+.signup form::-webkit-scrollbar {
+  width: 5px;
+}
+
+.signup form::-webkit-scrollbar-track {
+  background: var(--pale);
+}
+
+.signup form::-webkit-scrollbar-thumb {
+  background: var(--pink);
+  border-radius: 10px;
+}
+
+.error-message {
+  color: #ff4444;
+  background-color: rgba(255, 68, 68, 0.1);
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+  width: 65%;
+  text-align: center;
+  font-size: 0.9em;
+} 
