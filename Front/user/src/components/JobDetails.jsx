@@ -4,6 +4,66 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import JobApplicationForm from './JobApplicationForm';
 
+// Inline styles for the already applied message
+const styles = {
+  alreadyApplied: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  messageContent: {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    padding: '30px',
+    maxWidth: '500px',
+    width: '90%',
+    textAlign: 'center',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+  },
+  heading: {
+    color: '#e74c3c',
+    marginBottom: '15px',
+    fontSize: '24px',
+  },
+  text: {
+    color: '#333',
+    marginBottom: '10px',
+    fontSize: '16px',
+  },
+  actions: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '15px',
+    marginTop: '25px',
+  },
+  viewButton: {
+    backgroundColor: '#3498db',
+    color: 'white',
+    padding: '10px 20px',
+    borderRadius: '5px',
+    textDecoration: 'none',
+    fontWeight: 'bold',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  closeButton: {
+    backgroundColor: '#e0e0e0',
+    color: '#333',
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+  }
+};
+
 const JobDetails = () => {
   const params = useParams();
   const { id } = params;
@@ -13,6 +73,7 @@ const JobDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [alreadyApplied, setAlreadyApplied] = useState(false);
   const [mbtiStatus, setMbtiStatus] = useState(null);
   const [checkingMbti, setCheckingMbti] = useState(false);
   const [mbtiError, setMbtiError] = useState(false);
@@ -27,10 +88,6 @@ const JobDetails = () => {
         const response = await axios.get(`http://localhost:5001/api/jobs/${id}`);
         setJob(response.data);
         setMbtiError(false);
-        // Check MBTI status if the user is authenticated
-        if (isAuthenticated) {
-          checkMbtiStatus();
-        }
       } catch (error) {
         console.error("Error fetching job details:", error);
         setError("Failed to load job details. Please try again later.");
@@ -40,7 +97,46 @@ const JobDetails = () => {
     };
 
     fetchJobDetails();
-  }, [id, isAuthenticated]);
+  }, [id]);
+  
+  // Separate useEffect for auth-dependent operations
+  useEffect(() => {
+    // Only run these checks if the user is authenticated
+    if (isAuthenticated) {
+      checkMbtiStatus();
+      checkIfAlreadyApplied();
+    }
+  }, [isAuthenticated, id]);
+  
+  // Effect for handling auto-open after MBTI test
+  useEffect(() => {
+    // Check if we should automatically open the application form
+    // This happens when returning from MBTI test
+    const shouldAutoOpen = localStorage.getItem('autoOpenJobApplication') === 'true';
+    
+    // Also check URL parameters
+    const searchParams = new URLSearchParams(location.search);
+    const fromMbti = searchParams.get('fromMbti') === 'true';
+    
+    if ((shouldAutoOpen || fromMbti) && isAuthenticated) {
+      // Only open if the user hasn't already applied
+      if (!alreadyApplied) {
+        setShowApplicationForm(true);
+      } else {
+        // Show "already applied" message if user has already applied
+        setAlreadyApplied(true);
+      }
+      
+      // Clear the flag after using it
+      localStorage.removeItem('autoOpenJobApplication');
+      
+      // Clear URL parameters
+      if (fromMbti) {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    }
+  }, [location.search, isAuthenticated, alreadyApplied]);
 
   // Function to check MBTI status
   const checkMbtiStatus = async () => {
@@ -64,10 +160,35 @@ const JobDetails = () => {
     }
   };
 
+  // Check if user has already applied to this job
+  const checkIfAlreadyApplied = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const response = await axios.get(
+        `http://localhost:5001/api/applications/check/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      setAlreadyApplied(response.data.hasApplied);
+    } catch (error) {
+      console.error("Error checking application status:", error);
+    }
+  };
+
   const handleApplyClick = () => {
     if (!isAuthenticated) {
       // Redirect to login page
       window.location.href = '/auth?redirect=' + encodeURIComponent(`/jobs/${id}`);
+      return;
+    }
+    
+    // Check if already applied
+    if (alreadyApplied) {
+      alert('You have already applied to this job!');
       return;
     }
     
@@ -161,6 +282,24 @@ const JobDetails = () => {
               onClose={() => setShowApplicationForm(false)}
               onSuccess={handleApplicationSuccess}
             />
+          </div>
+        </div>
+      )}
+      
+      {alreadyApplied && (
+        <div className="already-applied-message" style={styles.alreadyApplied}>
+          <div className="message-content" style={styles.messageContent}>
+            <h3 style={styles.heading}>Application Already Submitted</h3>
+            <p style={styles.text}>You have already applied to this job position.</p>
+            <p style={styles.text}>You can check the status of your application in your profile under "My Applications".</p>
+            <div className="message-actions" style={styles.actions}>
+              <Link to="/my-applications" className="check-applications-btn" style={styles.viewButton}>
+                View My Applications
+              </Link>
+              <button onClick={() => setAlreadyApplied(false)} className="close-message-btn" style={styles.closeButton}>
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

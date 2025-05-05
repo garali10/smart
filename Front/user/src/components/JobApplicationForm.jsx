@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import './JobApplicationForm.css';
+import StepsIndicator from './StepsIndicator';
+import { Link } from 'react-router-dom';
 
 const JobApplicationForm = ({ job, onClose, onSuccess }) => {
   const { user, isAuthenticated } = useAuth();
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -25,6 +28,67 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     coverLetter: '',
   });
 
+  // Load saved application data when component mounts
+  useEffect(() => {
+    const savedApplication = localStorage.getItem('pendingApplication');
+    if (savedApplication) {
+      const parsedData = JSON.parse(savedApplication);
+      // Only restore if it's for the same job
+      if (parsedData.jobId === job._id) {
+        setFormData({
+          name: parsedData.name || formData.name,
+          email: parsedData.email || formData.email,
+          phone: parsedData.phone || '',
+          coverLetter: parsedData.coverLetter || '',
+        });
+        
+        // Check for stored step in localStorage (from MBTI test return)
+        const storedStep = localStorage.getItem('currentJobApplicationStep');
+        if (storedStep) {
+          setCurrentStep(parseInt(storedStep, 10));
+          // Clear the stored step after using it
+          localStorage.removeItem('currentJobApplicationStep');
+        } else {
+          // Use the saved step from application data if no direct step override exists
+          setCurrentStep(parsedData.currentStep || 1);
+        }
+      }
+    }
+    
+    // Check if user has already applied to this job
+    const checkIfAlreadyApplied = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(
+          `http://localhost:5001/api/applications/check/${job._id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        
+        if (response.data.hasApplied) {
+          setErrorMessage(
+            <div className="already-applied-message">
+              <h3>You've Already Applied</h3>
+              <p>You have already submitted an application for this position.</p>
+              <p>You can check your application status in your profile.</p>
+              <Link to="/my-applications" className="view-applications-btn">
+                View My Applications
+              </Link>
+            </div>
+          );
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error checking application status:', err);
+      }
+    };
+    
+    checkIfAlreadyApplied();
+  }, [job._id, isAuthenticated]);
+
   // Fetch MBTI data when component mounts
   useEffect(() => {
     const fetchMbti = async () => {
@@ -36,14 +100,11 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        console.log('MBTI test status response:', response.data);
-        
         setMbtiStatus(response.data.status);
         
         if (response.data && response.data.status === 'completed') {
           setMbtiResult(response.data.result?.personalityType || response.data.result);
           setMbtiScores(response.data.result?.dimensionScores || {});
-          console.log('MBTI data loaded:', response.data.result);
         }
       } catch (err) {
         console.error('Error fetching MBTI data:', err);
@@ -56,9 +117,86 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     fetchMbti();
   }, [isAuthenticated]);
 
+  // Add this useEffect to handle return from MBTI test
+  useEffect(() => {
+    // Check if returning from MBTI test and get URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const fromMbti = params.get('fromMbti');
+    const stepParam = params.get('step');
+    
+    // If step parameter exists, set the current step
+    if (stepParam) {
+      const stepNumber = parseInt(stepParam, 10);
+      if (!isNaN(stepNumber) && stepNumber >= 1 && stepNumber <= 3) {
+        setCurrentStep(stepNumber);
+      }
+    }
+    
+    // Also check for the override from localStorage (this takes precedence)
+    const storedStep = localStorage.getItem('currentJobApplicationStep');
+    if (storedStep) {
+      setCurrentStep(parseInt(storedStep, 10));
+      // Clear after using
+      localStorage.removeItem('currentJobApplicationStep');
+    }
+    
+    if (fromMbti === 'true') {
+      // Clear the URL parameter without page reload
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Show success message about MBTI test completion
+      setErrorMessage(
+        <span className="success-message">
+          MBTI test completed successfully! You can now continue with your application.
+        </span>
+      );
+      
+      // Fetch updated MBTI status
+      const fetchMbti = async () => {
+        if (!isAuthenticated) return;
+        
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get('http://localhost:5001/api/tests/status/user', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          setMbtiStatus(response.data.status);
+          
+          if (response.data && response.data.status === 'completed') {
+            setMbtiResult(response.data.result?.personalityType || response.data.result);
+            setMbtiScores(response.data.result?.dimensionScores || {});
+          }
+        } catch (err) {
+          console.error('Error fetching MBTI data:', err);
+        }
+      };
+      
+      fetchMbti();
+    }
+  }, [isAuthenticated, job._id]);
+
+  // Save application progress
+  const saveApplicationProgress = () => {
+    const applicationData = {
+      jobId: job._id,
+      jobTitle: job.title,
+      company: job.company || '',
+      location: job.location || '',
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      coverLetter: formData.coverLetter,
+      currentStep: currentStep,
+      hasResume: !!resume
+    };
+    localStorage.setItem('pendingApplication', JSON.stringify(applicationData));
+    localStorage.setItem('returnToApplication', 'true');
+  };
+
   // Validation functions
   const validateField = (name, value) => {
-    // Check for empty fields first with custom messages
     if (!value || value.trim() === '') {
       switch (name) {
         case 'name':
@@ -88,7 +226,49 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     }
   };
 
-  // Handle field blur for immediate validation
+  const validateStep = () => {
+    switch (currentStep) {
+      case 1:
+        const personalInfoErrors = {};
+        ['name', 'email', 'phone'].forEach(field => {
+          const error = validateField(field, formData[field]);
+          if (error) personalInfoErrors[field] = error;
+        });
+        setFormErrors(personalInfoErrors);
+        return Object.keys(personalInfoErrors).length === 0;
+      
+      case 2:
+        const documentErrors = {};
+        if (!resume) {
+          setFileError('Please select your resume');
+          return false;
+        }
+        if (formData.coverLetter.trim().length < 20) {
+          documentErrors.coverLetter = 'Cover letter must be at least 20 characters long';
+          setFormErrors(documentErrors);
+          return false;
+        }
+        return true;
+      
+      default:
+        return true;
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+    
+    const error = validateField(name, value);
+    setFormErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
+  };
+
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateField(name, value);
@@ -98,34 +278,6 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     }));
   };
 
-  // Enhanced handle change with validation
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    
-    // Validate on change to show/clear errors immediately
-    const error = validateField(name, value);
-    setFormErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-  };
-
-  // Validate all fields before submission
-  const validateForm = () => {
-    const errors = {};
-    Object.keys(formData).forEach(key => {
-      const error = validateField(key, formData[key]);
-      if (error) errors[key] = error;
-    });
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  // Handle file selection with validation
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     
@@ -135,7 +287,6 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
       return;
     }
     
-    // Check file type
     const validTypes = ['.pdf', '.doc', '.docx'];
     const fileExtension = file.name.substring(file.name.lastIndexOf('.'));
     if (!validTypes.includes(fileExtension.toLowerCase())) {
@@ -144,7 +295,6 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
       return;
     }
     
-    // Check file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       setFileError('File is too large. Maximum file size is 5MB.');
       e.target.value = '';
@@ -155,7 +305,29 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     setResume(file);
   };
 
-  // Enhanced submit handler with validation
+  const handleNext = () => {
+    if (validateStep()) {
+      saveApplicationProgress();
+      
+      // If moving from step 2 to step 3, check if MBTI test is completed
+      if (currentStep === 2 && mbtiStatus !== 'completed') {
+        setErrorMessage(
+          <span>
+            You must complete the MBTI test before proceeding to review your application.
+            Please use the "Take MBTI Test" button in the MBTI Assessment section.
+          </span>
+        );
+        return;
+      }
+      
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -164,7 +336,7 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
       return;
     }
     
-    if (!validateForm()) {
+    if (!validateStep()) {
       setErrorMessage('Please fix the errors in the form before submitting.');
       return;
     }
@@ -174,42 +346,10 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
       return;
     }
     
-    // Better job ID validation
-    if (!job || !job._id) {
-      console.error('Invalid job data:', job);
-      setErrorMessage('Job information is missing or invalid. Please try again.');
-      return;
-    }
-    
-    console.log('Job data being used for application:', {
-      _id: job._id,
-      title: job.title,
-      company: job.company,
-      jobObject: job
-    });
-    
     // Check if MBTI test is completed
     if (mbtiStatus !== 'completed') {
-      console.log('MBTI test not completed. Redirecting to test page.');
-      
-      // Save application data in localStorage to resume after MBTI test
-      const pendingApplication = {
-        jobId: job._id,
-        jobTitle: job.title,
-        company: job.company || '',
-        location: job.location || '',
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        coverLetter: formData.coverLetter,
-        // We can't store the file in localStorage, but we'll mark that one was selected
-        hasResume: !!resume
-      };
-      
-      localStorage.setItem('pendingApplication', JSON.stringify(pendingApplication));
-      localStorage.setItem('returnToApplication', 'true');
-      
-      // Redirect to MBTI test
+      console.log('MBTI test not completed. Saving progress and redirecting...');
+      saveApplicationProgress();
       window.location.href = '/mbti-test?returnToJob=' + encodeURIComponent(job._id);
       return;
     }
@@ -238,21 +378,8 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
       applicationData.append('resume', resume);
       applicationData.append('department', 'Cloud');
       
-      // Add MBTI data if available
       if (mbtiResult) applicationData.append('mbtiResult', mbtiResult);
       if (mbtiScores) applicationData.append('mbtiScores', JSON.stringify(mbtiScores));
-      
-      console.log('Submitting application for job:', { 
-        jobId: job._id,
-        jobTitle: job.title,
-        mbtiResult, 
-        hasResume: !!resume
-      });
-      
-      // For debugging - log all form data
-      for (let pair of applicationData.entries()) {
-        console.log(pair[0] + ': ' + (pair[0] === 'resume' ? 'File object' : pair[1]));
-      }
       
       const response = await axios.post(
         'http://localhost:5001/api/applications',
@@ -265,10 +392,8 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
         }
       );
       
-      console.log('Application submission response:', response.data);
-      
       if (response.status === 201) {
-        // Clear any pending application data from localStorage
+        // Clear saved application data after successful submission
         localStorage.removeItem('pendingApplication');
         localStorage.removeItem('returnToApplication');
         
@@ -279,14 +404,8 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     } catch (error) {
       console.error('Application submission error:', error);
       
-      // More detailed error logging
-      if (error.response) {
-        console.error('Error response data:', error.response.data);
-        console.error('Error response status:', error.response.status);
-        console.error('Complete error object:', JSON.stringify(error.response.data));
-      }
-      
       if (error.response?.data?.message === 'MBTI test required') {
+        saveApplicationProgress();
         setErrorMessage(
           <span>
             You must complete the MBTI test before applying. Please go to your profile to take the test.<br />
@@ -303,6 +422,195 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     }
   };
 
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <>
+            <div className="form-group">
+              <label htmlFor="name">
+                Full Name <span className="required">*</span>
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={formErrors.name ? 'error' : ''}
+                />
+                {formErrors.name && (
+                  <div className="error-indicator">
+                    <span className="error-icon">!</span>
+                    <span className="field-error">{formErrors.name}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">
+                Email Address <span className="required">*</span>
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={formErrors.email ? 'error' : ''}
+                />
+                {formErrors.email && (
+                  <div className="error-indicator">
+                    <span className="error-icon">!</span>
+                    <span className="field-error">{formErrors.email}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="phone">
+                Phone Number <span className="required">*</span>
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={formErrors.phone ? 'error' : ''}
+                />
+                {formErrors.phone && (
+                  <div className="error-indicator">
+                    <span className="error-icon">!</span>
+                    <span className="field-error">{formErrors.phone}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        );
+
+      case 2:
+        return (
+          <>
+            <div className="form-group">
+              <label htmlFor="resume">
+                Resume (PDF, DOC, or DOCX) <span className="required">*</span>
+              </label>
+              <div className="file-upload-container">
+                <input
+                  type="file"
+                  id="resume"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  className={fileError ? 'error' : ''}
+                />
+                <div className="file-upload-info">
+                  {resume && <span className="file-name">{resume.name}</span>}
+                  {fileError && (
+                    <div className="error-indicator">
+                      <span className="error-icon">!</span>
+                      <span className="field-error">{fileError}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="coverLetter">
+                Cover Letter <span className="required">*</span>
+              </label>
+              <div className="input-wrapper">
+                <textarea
+                  id="coverLetter"
+                  name="coverLetter"
+                  value={formData.coverLetter}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={formErrors.coverLetter ? 'error' : ''}
+                  rows="6"
+                />
+                {formErrors.coverLetter && (
+                  <div className="error-indicator">
+                    <span className="error-icon">!</span>
+                    <span className="field-error">{formErrors.coverLetter}</span>
+                  </div>
+                )}
+                <div className="textarea-footer">
+                  <span className="character-count">
+                    {formData.coverLetter.length} characters
+                    {formData.coverLetter.length < 20 && ' (minimum 20)'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="form-group mbti-section">
+              <h4>MBTI Assessment</h4>
+              {mbtiStatus === 'completed' ? (
+                <div className="mbti-complete">
+                  <p>✓ MBTI Test Completed - Your Type: {mbtiResult}</p>
+                </div>
+              ) : (
+                <div className="mbti-required">
+                  <p>You must complete the MBTI test before proceeding to the next step.</p>
+                  <button 
+                    type="button" 
+                    className="mbti-test-btn" 
+                    onClick={() => {
+                      saveApplicationProgress();
+                      window.location.href = '/mbti-test?returnToJob=' + encodeURIComponent(job._id);
+                    }}
+                  >
+                    Take MBTI Test
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        );
+
+      case 3:
+        return (
+          <div className="review-step">
+            <h3>Review Your Application</h3>
+            <div className="review-section">
+              <h4>Personal Information</h4>
+              <p><strong>Name:</strong> {formData.name}</p>
+              <p><strong>Email:</strong> {formData.email}</p>
+              <p><strong>Phone:</strong> {formData.phone}</p>
+            </div>
+            <div className="review-section">
+              <h4>Documents</h4>
+              <p><strong>Resume:</strong> {resume?.name}</p>
+              <p><strong>Cover Letter:</strong></p>
+              <div className="cover-letter-preview">
+                {formData.coverLetter}
+              </div>
+            </div>
+            {mbtiStatus === 'completed' && mbtiResult && (
+              <div className="review-section">
+                <h4>MBTI Profile</h4>
+                <p><strong>Your Type:</strong> {mbtiResult}</p>
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="job-application-form">
       <h2>Apply for {job?.title || 'Unknown Job'}</h2>
@@ -313,154 +621,41 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
           <a href="/auth" className="login-btn">Login / Register</a>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="application-form" noValidate>
-          {errorMessage && (
-            <div className="error-message">
-              {errorMessage}
-            </div>
-          )}
+        <>
+          <StepsIndicator currentStep={currentStep} />
           
-          <div className="form-group">
-            <label htmlFor="name">
-              Full Name <span className="required">*</span>
-            </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={formErrors.name ? 'error' : ''}
-              />
-              {formErrors.name && (
-                <div className="error-indicator">
-                  <span className="error-icon">!</span>
-                  <span className="field-error">{formErrors.name}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">
-              Email Address <span className="required">*</span>
-            </label>
-            <div className="input-wrapper">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={formErrors.email ? 'error' : ''}
-              />
-              {formErrors.email && (
-                <div className="error-indicator">
-                  <span className="error-icon">!</span>
-                  <span className="field-error">{formErrors.email}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="phone">
-              Phone Number <span className="required">*</span>
-            </label>
-            <div className="input-wrapper">
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={formErrors.phone ? 'error' : ''}
-              />
-              {formErrors.phone && (
-                <div className="error-indicator">
-                  <span className="error-icon">!</span>
-                  <span className="field-error">{formErrors.phone}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="resume">
-              Resume (PDF, DOC, or DOCX) <span className="required">*</span>
-            </label>
-            <div className="file-upload-container">
-              <input
-                type="file"
-                id="resume"
-                accept=".pdf,.doc,.docx"
-                onChange={handleFileChange}
-                className={fileError ? 'error' : ''}
-              />
-              <div className="file-upload-info">
-                {resume && <span className="file-name">{resume.name}</span>}
-                {fileError && (
-                  <div className="error-indicator">
-                    <span className="error-icon">!</span>
-                    <span className="field-error">{fileError}</span>
-                  </div>
-                )}
+          <form onSubmit={handleSubmit} className="application-form" noValidate>
+            {errorMessage && (
+              <div className="error-message">
+                {errorMessage}
               </div>
-            </div>
-          </div>
+            )}
+            
+            {renderStepContent()}
 
-          <div className="form-group">
-            <label htmlFor="coverLetter">
-              Cover Letter <span className="required">*</span>
-            </label>
-            <div className="input-wrapper">
-              <textarea
-                id="coverLetter"
-                name="coverLetter"
-                value={formData.coverLetter}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={formErrors.coverLetter ? 'error' : ''}
-                rows="6"
-              />
-              {formErrors.coverLetter && (
-                <div className="error-indicator">
-                  <span className="error-icon">!</span>
-                  <span className="field-error">{formErrors.coverLetter}</span>
-                </div>
+            <div className="form-actions">
+              {currentStep > 1 && (
+                <button type="button" onClick={handleBack} className="back-btn">
+                  Back
+                </button>
               )}
-              <div className="textarea-footer">
-                <span className="character-count">
-                  {formData.coverLetter.length} characters
-                  {formData.coverLetter.length < 20 && ' (minimum 20)'}
-                </span>
-              </div>
+              
+              {currentStep < 3 ? (
+                <button type="button" onClick={handleNext} className="next-btn">
+                  Next
+                </button>
+              ) : (
+                <button 
+                  type="submit" 
+                  className="submit-btn" 
+                  disabled={loading}
+                >
+                  {loading ? 'Submitting...' : 'Submit Application'}
+                </button>
+              )}
             </div>
-          </div>
-
-          {mbtiStatus === 'completed' && mbtiResult && (
-            <div className="mbti-info">
-              <p>Your MBTI Type: <strong>{mbtiResult}</strong></p>
-            </div>
-          )}
-
-          <div className="form-actions">
-            <button type="button" onClick={onClose} className="cancel-btn">
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              className="submit-btn" 
-              disabled={loading}
-            >
-              {loading ? 'Submitting...' : 'Submit Application'}
-            </button>
-          </div>
-        </form>
+          </form>
+        </>
       )}
     </div>
   );
