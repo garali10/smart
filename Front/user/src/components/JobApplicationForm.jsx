@@ -18,6 +18,12 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
   const [mbtiResult, setMbtiResult] = useState(null);
   const [mbtiScores, setMbtiScores] = useState(null);
   const [mbtiStatus, setMbtiStatus] = useState('loading');
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    coverLetter: '',
+  });
 
   // Fetch MBTI data when component mounts
   useEffect(() => {
@@ -50,13 +56,46 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     fetchMbti();
   }, [isAuthenticated]);
 
-  // Handle input changes
+  // Validation functions
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'name':
+        return value.trim().length < 2 ? 'Name must be at least 2 characters long' : '';
+      case 'email':
+        return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Please enter a valid email address' : '';
+      case 'phone':
+        return !/^\+?[\d\s-]{10,}$/.test(value) ? 'Please enter a valid phone number' : '';
+      case 'coverLetter':
+        return value.trim().length < 50 ? 'Cover letter must be at least 50 characters long' : '';
+      default:
+        return '';
+    }
+  };
+
+  // Enhanced handle change with validation
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+    
+    // Clear error when user starts typing
+    setFormErrors(prev => ({
+      ...prev,
+      [name]: ''
+    }));
+  };
+
+  // Validate all fields before submission
+  const validateForm = () => {
+    const errors = {};
+    Object.keys(formData).forEach(key => {
+      const error = validateField(key, formData[key]);
+      if (error) errors[key] = error;
+    });
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   // Handle file selection
@@ -88,12 +127,17 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     setResume(file);
   };
 
-  // Handle form submission
+  // Enhanced submit handler with validation
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!isAuthenticated) {
       setErrorMessage('You must be logged in to apply for a job.');
+      return;
+    }
+    
+    if (!validateForm()) {
+      setErrorMessage('Please fix the errors in the form before submitting.');
       return;
     }
     
@@ -156,14 +200,15 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
       
       const applicationData = new FormData();
       applicationData.append('jobId', job._id);
-      applicationData.append('jobTitle', job.title);
-      applicationData.append('company', job.company || '');
+      applicationData.append('jobTitle', job.title || '');
+      applicationData.append('company', 'Cloud');
       applicationData.append('location', job.location || '');
       applicationData.append('name', formData.name);
       applicationData.append('email', formData.email);
       applicationData.append('phone', formData.phone);
       applicationData.append('coverLetter', formData.coverLetter);
       applicationData.append('resume', resume);
+      applicationData.append('department', 'Cloud');
       
       // Add MBTI data if available
       if (mbtiResult) applicationData.append('mbtiResult', mbtiResult);
@@ -240,7 +285,7 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
           <a href="/auth" className="login-btn">Login / Register</a>
         </div>
       ) : (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="application-form">
           {errorMessage && (
             <div className="error-message">
               {errorMessage}
@@ -248,94 +293,113 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
           )}
           
           <div className="form-group">
-            <label htmlFor="name">Full Name*</label>
+            <label htmlFor="name">
+              Full Name <span className="required">*</span>
+            </label>
             <input
               type="text"
               id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="text-input"
+              className={formErrors.name ? 'error' : ''}
               required
-              placeholder="Enter your full name"
             />
+            {formErrors.name && <span className="field-error">{formErrors.name}</span>}
           </div>
-          
+
           <div className="form-group">
-            <label htmlFor="email">Email Address*</label>
+            <label htmlFor="email">
+              Email Address <span className="required">*</span>
+            </label>
             <input
               type="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="text-input"
+              className={formErrors.email ? 'error' : ''}
               required
-              placeholder="Enter your email address"
             />
+            {formErrors.email && <span className="field-error">{formErrors.email}</span>}
           </div>
-          
+
           <div className="form-group">
-            <label htmlFor="phone">Phone Number*</label>
+            <label htmlFor="phone">
+              Phone Number <span className="required">*</span>
+            </label>
             <input
               type="tel"
               id="phone"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              className="text-input"
-              required
-              placeholder="Enter your phone number"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="resume">Resume/CV* (PDF, DOC, DOCX, max 5MB)</label>
-            <input
-              type="file"
-              id="resume"
-              name="resume"
-              onChange={handleFileChange}
-              accept=".pdf,.doc,.docx"
+              className={formErrors.phone ? 'error' : ''}
+              placeholder="+1 (123) 456-7890"
               required
             />
-            {fileError && <div className="error-message">{fileError}</div>}
+            {formErrors.phone && <span className="field-error">{formErrors.phone}</span>}
           </div>
-          
+
           <div className="form-group">
-            <label htmlFor="coverLetter">Cover Letter (Optional)</label>
+            <label htmlFor="resume">
+              Resume (PDF, DOC, or DOCX) <span className="required">*</span>
+            </label>
+            <div className="file-upload-container">
+              <input
+                type="file"
+                id="resume"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileChange}
+                className={fileError ? 'error' : ''}
+              />
+              <div className="file-upload-info">
+                {resume && <span className="file-name">{resume.name}</span>}
+                {fileError && <span className="field-error">{fileError}</span>}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="coverLetter">
+              Cover Letter <span className="required">*</span>
+            </label>
             <textarea
               id="coverLetter"
               name="coverLetter"
               value={formData.coverLetter}
               onChange={handleChange}
-              rows="5"
-              placeholder="Tell us why you're interested in this position"
-            ></textarea>
+              className={formErrors.coverLetter ? 'error' : ''}
+              rows="6"
+              required
+            />
+            <div className="textarea-footer">
+              <span className="character-count">
+                {formData.coverLetter.length} characters
+                {formData.coverLetter.length < 50 && ' (minimum 50)'}
+              </span>
+              {formErrors.coverLetter && <span className="field-error">{formErrors.coverLetter}</span>}
+            </div>
           </div>
-          
+
+          {mbtiStatus === 'completed' && mbtiResult && (
+            <div className="mbti-info">
+              <p>Your MBTI Type: <strong>{mbtiResult}</strong></p>
+            </div>
+          )}
+
           <div className="form-actions">
-            <button type="button" className="cancel-btn" onClick={onClose}>
+            <button type="button" onClick={onClose} className="cancel-btn">
               Cancel
             </button>
-            <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? 'Submitting...' : 
-               mbtiStatus === 'loading' ? 'Checking MBTI Status...' :
-               mbtiStatus !== 'completed' ? 'Continue to MBTI Test' : 'Apply'}
+            <button 
+              type="submit" 
+              className="submit-btn" 
+              disabled={loading}
+            >
+              {loading ? 'Submitting...' : 'Submit Application'}
             </button>
           </div>
-          
-          {mbtiStatus === 'loading' && (
-            <div className="info-message">
-              Checking your MBTI test status...
-            </div>
-          )}
-          
-          {mbtiStatus !== 'completed' && mbtiStatus !== 'loading' && (
-            <div className="info-message">
-              You need to complete the MBTI test before applying. Clicking "Continue to MBTI Test" will take you there.
-            </div>
-          )}
         </form>
       )}
     </div>
