@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { FaUsers } from 'react-icons/fa';
 
 
 // Assume these icons are imported from an icon library
@@ -39,6 +40,11 @@ const navItems: NavItem[] = [
     icon: <PlugInIcon />,
     name: "Job Management",
     path: "/jobs",
+  },
+  {
+    icon: <FaUsers />,
+    name: "Candidates",
+    path: "/recruitment",
   },
   {
     icon: <CalenderIcon />,
