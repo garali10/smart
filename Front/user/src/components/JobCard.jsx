@@ -7,6 +7,15 @@ const JobCard = ({ job }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isApplyMode, setIsApplyMode] = useState(false);
   const [applicationSuccess, setApplicationSuccess] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
+
+  // Ensure job data is properly structured
+  const jobData = {
+    ...job,
+    company: 'Cloud',
+    type: job.type || 'Full Time',
+    location: job.location || 'Remote',
+  };
 
   // Map departments to category images
   const categoryImages = {
@@ -25,7 +34,7 @@ const JobCard = ({ job }) => {
     return categoryImages[departmentKey] || defaultImage;
   };
   
-  const imageSrc = getImageSrc(job); // Calculate image source
+  const imageSrc = getImageSrc(jobData); // Calculate image source
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -42,28 +51,29 @@ const JobCard = ({ job }) => {
   const handleApplicationSuccess = () => {
     setApplicationSuccess(true);
     setIsApplyMode(false);
+    setHasApplied(true);
   };
 
   return (
     <>
       <div className="job-card">
         <div className="job-card-image">
-          <img src={imageSrc} alt={job.title || 'Job Category'} />
-          <div className="job-type-badge">{job.type || 'Full Time'}</div>
+          <img src={imageSrc} alt={jobData.title || 'Job Category'} />
+          <div className="job-type-badge">{jobData.type || 'Full Time'}</div>
         </div>
         <div className="job-card-content">
-          <div className="job-category">{job.department || 'General'}</div>
-          <h3 className="job-title">{job.title || 'Untitled Position'}</h3>
+          <div className="job-category">{jobData.department || 'General'}</div>
+          <h3 className="job-title">{jobData.title || 'Untitled Position'}</h3>
           <p className="job-description">
-            {job.description?.substring(0, 100) || 'No description available'}...
+            {jobData.description?.substring(0, 100) || 'No description available'}...
           </p>
           <div className="job-meta">
             <div className="job-location">
               <i className="fa fa-map-marker"></i>
-              {job.location || 'Location N/A'}
+              {jobData.location || 'Location N/A'}
             </div>
             <div className="job-date">
-              Posted: {formatDate(job.postedDate)}
+              Posted: {formatDate(jobData.postedDate)}
             </div>
           </div>
           <button onClick={() => setIsModalOpen(true)} className="view-job-btn">
@@ -79,7 +89,7 @@ const JobCard = ({ job }) => {
       }}>
         {isApplyMode ? (
           <JobApplicationForm 
-            job={job} 
+            job={jobData} 
             onClose={() => setIsApplyMode(false)} 
             onSuccess={handleApplicationSuccess}
           />
@@ -87,7 +97,7 @@ const JobCard = ({ job }) => {
           <div className="application-success">
             <div className="success-icon">✓</div>
             <h2>Application Submitted!</h2>
-            <p>Thank you for applying to {job.title}. Your application has been received.</p>
+            <p>Thank you for applying to {jobData.title}. Your application has been received.</p>
             <p>We will review your credentials and contact you if your qualifications match our needs.</p>
             <button 
               className="close-btn" 
@@ -103,52 +113,64 @@ const JobCard = ({ job }) => {
           <div className="job-details">
             <div className="job-details-header">
               <div className="job-image">
-                <img src={imageSrc} alt={job.title || 'Job Category'} />
-                <div className="job-type-badge">{job.type || 'Full Time'}</div>
+                <img src={imageSrc} alt={jobData.title || 'Job Category'} />
+                <div className="job-type-badge">{jobData.type || 'Full Time'}</div>
               </div>
-              <h2>{job.title}</h2>
+              <h2>{jobData.title}</h2>
               <div className="job-meta-info">
                 <div className="meta-item">
                   <i className="fas fa-building"></i>
-                  <span>{job.department || 'General'}</span>
+                  <span>{jobData.department || 'General'}</span>
                 </div>
                 <div className="meta-item">
                   <i className="fas fa-map-marker-alt"></i>
-                  <span>{job.location || 'Location N/A'}</span>
+                  <span>{jobData.location || 'Location N/A'}</span>
                 </div>
                 <div className="meta-item">
                   <i className="fas fa-briefcase"></i>
-                  <span>{job.type || 'Full Time'}</span>
+                  <span>{jobData.type || 'Full Time'}</span>
                 </div>
                 <div className="meta-item">
                   <i className="fas fa-calendar"></i>
-                  <span>Posted: {formatDate(job.postedDate)}</span>
+                  <span>Posted: {formatDate(jobData.postedDate)}</span>
                 </div>
               </div>
               <div className="salary-range">
                 <i className="fas fa-money-bill-wave mr-2"></i>
-                Salary Range: {formatSalary(job.salary)} per year
+                Salary Range: {formatSalary(jobData.salary)} per year
               </div>
             </div>
 
             <div className="job-description">
               <h3>Job Description</h3>
-              <p>{job.description || 'No description available'}</p>
+              <p>{jobData.description || 'No description available'}</p>
             </div>
 
             <div className="job-description">
               <h3>Required Experience</h3>
-              <p>{job.experience || 'Experience requirements not specified'}</p>
+              <p>{jobData.experience || 'Experience requirements not specified'}</p>
             </div>
 
             <div className="application-deadline">
               <i className="fas fa-clock mr-2"></i>
-              Application Deadline: {formatDate(job.deadline)}
+              Application Deadline: {formatDate(jobData.deadline)}
             </div>
+
+            {hasApplied && (
+              <div style={{
+                color: '#22c55e',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                margin: '10px 0'
+              }}>
+                Applied
+              </div>
+            )}
 
             <button
               className="apply-button"
               onClick={() => setIsApplyMode(true)}
+              disabled={hasApplied}
             >
               Apply Now
             </button>
