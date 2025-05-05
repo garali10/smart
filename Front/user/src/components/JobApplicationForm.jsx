@@ -58,18 +58,44 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
 
   // Validation functions
   const validateField = (name, value) => {
+    // Check for empty fields first with custom messages
+    if (!value || value.trim() === '') {
+      switch (name) {
+        case 'name':
+          return 'Please enter your full name';
+        case 'email':
+          return 'Please enter your email address';
+        case 'phone':
+          return 'Please enter your phone number';
+        case 'coverLetter':
+          return 'Please write your cover letter';
+        default:
+          return 'This field is required';
+      }
+    }
+    
     switch (name) {
       case 'name':
         return value.trim().length < 2 ? 'Name must be at least 2 characters long' : '';
       case 'email':
         return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? 'Please enter a valid email address' : '';
       case 'phone':
-        return !/^\+?[\d\s-]{10,}$/.test(value) ? 'Please enter a valid phone number' : '';
+        return !/^\+?[\d\s-]{8,}$/.test(value) ? 'Please enter a valid phone number (minimum 8 digits)' : '';
       case 'coverLetter':
-        return value.trim().length < 50 ? 'Cover letter must be at least 50 characters long' : '';
+        return value.trim().length < 20 ? 'Cover letter must be at least 20 characters long' : '';
       default:
         return '';
     }
+  };
+
+  // Handle field blur for immediate validation
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const error = validateField(name, value);
+    setFormErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
   };
 
   // Enhanced handle change with validation
@@ -80,10 +106,11 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
       [name]: value,
     }));
     
-    // Clear error when user starts typing
+    // Validate on change to show/clear errors immediately
+    const error = validateField(name, value);
     setFormErrors(prev => ({
       ...prev,
-      [name]: ''
+      [name]: error
     }));
   };
 
@@ -98,12 +125,13 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
     return Object.keys(errors).length === 0;
   };
 
-  // Handle file selection
+  // Handle file selection with validation
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     
     if (!file) {
       setResume(null);
+      setFileError('Please select your resume');
       return;
     }
     
@@ -285,7 +313,7 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
           <a href="/auth" className="login-btn">Login / Register</a>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="application-form">
+        <form onSubmit={handleSubmit} className="application-form" noValidate>
           {errorMessage && (
             <div className="error-message">
               {errorMessage}
@@ -296,49 +324,69 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
             <label htmlFor="name">
               Full Name <span className="required">*</span>
             </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className={formErrors.name ? 'error' : ''}
-              required
-            />
-            {formErrors.name && <span className="field-error">{formErrors.name}</span>}
+            <div className="input-wrapper">
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={formErrors.name ? 'error' : ''}
+              />
+              {formErrors.name && (
+                <div className="error-indicator">
+                  <span className="error-icon">!</span>
+                  <span className="field-error">{formErrors.name}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="email">
               Email Address <span className="required">*</span>
             </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={formErrors.email ? 'error' : ''}
-              required
-            />
-            {formErrors.email && <span className="field-error">{formErrors.email}</span>}
+            <div className="input-wrapper">
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={formErrors.email ? 'error' : ''}
+              />
+              {formErrors.email && (
+                <div className="error-indicator">
+                  <span className="error-icon">!</span>
+                  <span className="field-error">{formErrors.email}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="phone">
               Phone Number <span className="required">*</span>
             </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className={formErrors.phone ? 'error' : ''}
-              placeholder="+1 (123) 456-7890"
-              required
-            />
-            {formErrors.phone && <span className="field-error">{formErrors.phone}</span>}
+            <div className="input-wrapper">
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={formErrors.phone ? 'error' : ''}
+              />
+              {formErrors.phone && (
+                <div className="error-indicator">
+                  <span className="error-icon">!</span>
+                  <span className="field-error">{formErrors.phone}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
@@ -355,7 +403,12 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
               />
               <div className="file-upload-info">
                 {resume && <span className="file-name">{resume.name}</span>}
-                {fileError && <span className="field-error">{fileError}</span>}
+                {fileError && (
+                  <div className="error-indicator">
+                    <span className="error-icon">!</span>
+                    <span className="field-error">{fileError}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -364,21 +417,28 @@ const JobApplicationForm = ({ job, onClose, onSuccess }) => {
             <label htmlFor="coverLetter">
               Cover Letter <span className="required">*</span>
             </label>
-            <textarea
-              id="coverLetter"
-              name="coverLetter"
-              value={formData.coverLetter}
-              onChange={handleChange}
-              className={formErrors.coverLetter ? 'error' : ''}
-              rows="6"
-              required
-            />
-            <div className="textarea-footer">
-              <span className="character-count">
-                {formData.coverLetter.length} characters
-                {formData.coverLetter.length < 50 && ' (minimum 50)'}
-              </span>
-              {formErrors.coverLetter && <span className="field-error">{formErrors.coverLetter}</span>}
+            <div className="input-wrapper">
+              <textarea
+                id="coverLetter"
+                name="coverLetter"
+                value={formData.coverLetter}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={formErrors.coverLetter ? 'error' : ''}
+                rows="6"
+              />
+              {formErrors.coverLetter && (
+                <div className="error-indicator">
+                  <span className="error-icon">!</span>
+                  <span className="field-error">{formErrors.coverLetter}</span>
+                </div>
+              )}
+              <div className="textarea-footer">
+                <span className="character-count">
+                  {formData.coverLetter.length} characters
+                  {formData.coverLetter.length < 20 && ' (minimum 20)'}
+                </span>
+              </div>
             </div>
           </div>
 
