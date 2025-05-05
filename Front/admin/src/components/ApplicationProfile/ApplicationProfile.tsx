@@ -74,7 +74,7 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, on
   const [cvAnalysis, setCvAnalysis] = useState<CVAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const { } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -138,7 +138,8 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, on
       console.log('Attempting to update status:', {
         applicationId: application._id,
         currentStatus: status,
-        newStatus: newStatus
+        newStatus: newStatus,
+        departmentHead: user?.name
       });
 
       const token = localStorage.getItem('token');
@@ -148,10 +149,12 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, on
 
       const response = await api.patch(
         `/applications/${application._id}/status`,
-        { status: newStatus },
+        { 
+          status: newStatus,
+          departmentHead: user?.name 
+        },
         {
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
           }
         }
