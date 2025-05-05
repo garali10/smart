@@ -1,0 +1,81 @@
+#portfolio {
+    padding: 100px 0;
+    background: #f6f6f6;
+  }
+  
+  .section-title {
+    margin-bottom: 50px;
+    text-align: center;
+  }
+  
+  .section-title h2 {
+    position: relative;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #800000;
+    display: inline-block;
+    color: #333;
+    font-size: 32px;
+    font-weight: 600;
+  }
+  
+  .section-title p {
+    font-size: 18px;
+    color: #666;
+    margin-top: 20px;
+  }
+  
+  .job-listings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+  
+  .job-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin: 0 auto;
+  }
+  
+  /* Loading and error states */
+  .text-center {
+    text-align: center;
+    padding: 40px 0;
+  }
+  
+  .text-red-600 {
+    color: #dc2626;
+  }
+  
+  .text-gray-500 {
+    color: #6b7280;
+  }
+  
+  .py-8 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 1024px) {
+    .job-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    #portfolio {
+      padding: 60px 0;
+    }
+  
+    .section-title {
+      margin-bottom: 30px;
+    }
+  
+    .job-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  } 

@@ -1,0 +1,314 @@
+.profile-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  color: #555;
+  transition: color 0.3s ease;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: larger;
+}
+
+.profile-link:hover {
+  color: #880808;
+  text-decoration: none;
+}
+
+.login-link {
+  padding: 10px 15px;
+  color: #555;
+}
+
+.login-link:hover {
+  color: #880808;
+  text-decoration: none;
+}
+
+.auth-link {
+  padding: 10px 15px;
+  color: #555;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  color: #880808;
+}
+
+/* Add this to ensure the icon is visible */
+.profile-link svg {
+  margin-right: 5px;
+}
+
+.profile-menu-item {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  z-index: 9999;
+  margin-top: 5px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 12px 16px;
+  color: #555;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  width: 100%;
+  border: none;
+  background: none;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background-color: #fff1f1;
+  color: #880808;
+}
+
+.logout-button {
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 12px 16px;
+  color: #555;
+  transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+  background-color: #fff1f1;
+  color: #880808;
+}
+
+.logout-icon {
+  color: #880808;
+  margin-right: 8px;
+}
+
+/* Add a divider between items */
+.dropdown-item:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  padding: 15px;
+  color: #555;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #880808;
+  border-color: #880808;
+}
+
+.navbar-nav > li > button {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  line-height: 20px;
+}
+
+.profile-link {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  color: #555;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.profile-link:hover {
+  color: #880808;
+}
+
+/* Update dropdown positioning */
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  z-index: 9999;
+  margin-top: 5px;
+}
+
+/* Ensure dropdown is above other elements */
+.profile-menu-item {
+  position: relative;
+  z-index: 1000;
+}
+
+/* Active state for navigation items */
+.nav-link.active {
+  color: #880808;
+}
+
+/* Update hover color for brand link */
+.navbar-brand:hover {
+  color: #880808;
+}
+
+/* Update focus outline color for nav buttons */
+.nav-link:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(136, 8, 8, 0.2); /* #880808 with opacity */
+}
+
+/* Update focus outline for form controls */
+.form-control:focus {
+  outline: none;
+  border-color: #880808;
+  box-shadow: 0 0 0 2px rgba(136, 8, 8, 0.2);
+}
+
+/* Update button focus states */
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(136, 8, 8, 0.2);
+}
+
+/* Update navbar-toggle focus */
+.navbar-toggle:focus {
+  outline: none;
+  background-color: transparent;
+  border-color: #880808;
+}
+
+/* Update dropdown item focus */
+.dropdown-item:focus {
+  outline: none;
+  background-color: #fff1f1;
+  color: #880808;
+}
+
+/* Update profile link focus */
+.profile-link:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(136, 8, 8, 0.2);
+}
+
+/* Update navbar-brand focus */
+.navbar-brand:focus {
+  outline: none;
+  color: #880808;
+}
+
+/* Add this to remove default button focus styles */
+button:focus {
+  outline: none;
+}
+
+/* Add this to style the active nav item */
+.nav-item.active > .nav-link {
+  color: #880808;
+  box-shadow: 0 0 0 2px rgba(136, 8, 8, 0.2);
+}
+
+/* Update hover state for navbar buttons */
+.navbar-nav > li > button:hover {
+  border-color: #880808;
+}
+
+/* Override Bootstrap's default hover styles */
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > button:hover {
+  color: #880808;
+  background-color: transparent;
+  border-color: #880808;
+}
+
+/* Update hover state for navbar brand */
+.navbar-default .navbar-brand:hover {
+  color: #880808;
+  border-color: #880808;
+}
+
+/* Add this to style the hover effect for all nav items */
+.navbar-nav > li > a:hover,
+.navbar-nav > li > button:hover,
+.nav-link:hover,
+.profile-link:hover {
+  position: relative;
+}
+
+.navbar-nav > li > a:hover::after,
+.navbar-nav > li > button:hover::after,
+.nav-link:hover::after,
+.profile-link:hover::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #880808;
+}
+
+/* Remove default Bootstrap focus outline */
+.navbar-default .navbar-nav > li > a:focus,
+.navbar-default .navbar-nav > li > button:focus,
+.navbar-default .navbar-brand:focus {
+  color: #880808;
+  background-color: transparent;
+  outline: none;
+  border-color: #880808;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  height: auto;
+  padding: 5px 15px;
+}
+
+.brand-logo {
+  height: 60px;
+  width: auto;
+  margin-right: 15px;
+  object-fit: contain;
+}
+
+/* For mobile responsiveness */
+@media (max-width: 768px) {
+  .brand-logo {
+    height: 45px;
+  }
+  
+  .navbar-brand {
+    font-size: 18px;
+  }
+}
+
+/* Adjust navbar height to accommodate larger logo */
+.navbar {
+  min-height: 80px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+} 
