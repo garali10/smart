@@ -76,16 +76,138 @@ transporter.verify(function(error, success) {
 
 // Email templates
 const emailTemplates = {
-  applicationStatus: (name, jobTitle, status, company) => ({
+  applicationStatus: (candidateName, jobTitle, status, companyName, departmentHead) => ({
     subject: `Application Status Update - ${jobTitle}`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="/uploads/company-logo.png" alt="Company Logo" style="max-width: 200px; height: auto;">
+        </div>
         <h2 style="color: #333;">Application Status Update</h2>
-        <p>Dear ${name},</p>
-        <p>Your application for the position of <strong>${jobTitle}</strong> at <strong>${company}</strong> has been updated.</p>
-        <p>Current Status: <strong style="color: #800000;">${status}</strong></p>
-        <p>Please log in to your account to view more details about your application.</p>
-        <p>Best regards,<br>The ${company} Team</p>
+        <p>Dear ${candidateName},</p>
+        <p>We would like to inform you about the status of your application for the position of ${jobTitle} at ${companyName}.</p>
+        <p>Your application status has been updated to: <strong>${status}</strong></p>
+        <p>If you have any questions or need further information, please don't hesitate to contact us.</p>
+        <div style="margin-top: 40px;">
+          <table cellpadding="0" cellspacing="0" border="0" style="vertical-align: -webkit-baseline-middle; font-size: medium; font-family: Arial;">
+            <tbody>
+              <tr>
+                <td>
+                  <table cellpadding="0" cellspacing="0" border="0" style="vertical-align: -webkit-baseline-middle; font-size: medium; font-family: Arial;">
+                    <tbody>
+                      <tr>
+                        <td style="vertical-align: top;">
+                          <table cellpadding="0" cellspacing="0" border="0" style="vertical-align: -webkit-baseline-middle; font-size: medium; font-family: Arial;">
+                            <tbody>
+                              <tr>
+                                <td style="text-align: center;">
+                                  <img src="https://pbs.twimg.com/profile_images/1394261489054277638/rijXG1C__400x400.jpg" role="presentation" width="130" style="max-width: 128px; display: block;">
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                        <td width="46" aria-label="Vertical Spacer">
+                          <div style="width: 46px;"></div>
+                        </td>
+                        <td style="padding: 0px; vertical-align: middle;">
+                          <h2 style="margin: 0px; font-size: 18px; font-family: Arial; color: rgb(0, 0, 0); font-weight: 600;">
+                            <span>${departmentHead}</span>
+                          </h2>
+                          <p style="margin: 0px; color: rgb(0, 0, 0); font-size: 14px; line-height: 22px;">
+                            <span>Department Head</span>
+                          </p>
+                          <div style="margin: 0px; font-weight: 500; color: rgb(0, 0, 0); font-size: 14px; line-height: 22px;">
+                            <span>All departments</span>
+                            <span>&nbsp;|&nbsp;</span>
+                            <span>${companyName}</span>
+                          </div>
+                          <table cellpadding="0" cellspacing="0" border="0" style="vertical-align: -webkit-baseline-middle; font-size: medium; font-family: Arial; width: 100%;">
+                            <tbody>
+                              <tr>
+                                <td height="30" aria-label="Horizontal Spacer"></td>
+                              </tr>
+                              <tr>
+                                <td width="auto" aria-label="Divider" style="width: 100%; height: 1px; border-bottom: 1px solid rgb(248, 98, 149); border-left: none; display: block;"></td>
+                              </tr>
+                              <tr>
+                                <td height="30" aria-label="Horizontal Spacer"></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <table cellpadding="0" cellspacing="0" border="0" style="vertical-align: -webkit-baseline-middle; font-size: medium; font-family: Arial;">
+                            <tbody>
+                              <tr style="vertical-align: middle; height: 25px;">
+                                <td width="30" style="vertical-align: middle;">
+                                  <table cellpadding="0" cellspacing="0" border="0" style="vertical-align: -webkit-baseline-middle; font-size: medium; font-family: Arial;">
+                                    <tbody>
+                                      <tr>
+                                        <td style="vertical-align: bottom;">
+                                          <span style="display: inline-block; background-color: rgb(248, 98, 149);">
+                                            <img src="https://cdn2.hubspot.net/hubfs/53/tools/email-signature-generator/icons/phone-icon-2x.png" alt="mobilePhone" width="13" style="display: block; background-color: rgb(248, 98, 149);">
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                                <td style="padding: 0px; color: rgb(0, 0, 0);">
+                                  <a href="tel:50962694" style="text-decoration: none; color: rgb(0, 0, 0); font-size: 14px;">
+                                    <span>50962694</span>
+                                  </a>
+                                </td>
+                              </tr>
+                              <tr style="vertical-align: middle; height: 25px;">
+                                <td width="30" style="vertical-align: middle;">
+                                  <table cellpadding="0" cellspacing="0" border="0" style="vertical-align: -webkit-baseline-middle; font-size: medium; font-family: Arial;">
+                                    <tbody>
+                                      <tr>
+                                        <td style="vertical-align: bottom;">
+                                          <span style="display: inline-block; background-color: rgb(248, 98, 149);">
+                                            <img src="https://cdn2.hubspot.net/hubfs/53/tools/email-signature-generator/icons/email-icon-2x.png" alt="emailAddress" width="13" style="display: block; background-color: rgb(248, 98, 149);">
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                                <td style="padding: 0px; color: rgb(0, 0, 0);">
+                                  <a href="mailto:depHead@esprit.tn" style="text-decoration: none; color: rgb(0, 0, 0); font-size: 14px;">
+                                    <span>depHead@esprit.tn</span>
+                                  </a>
+                                </td>
+                              </tr>
+                              <tr style="vertical-align: middle; height: 25px;">
+                                <td width="30" style="vertical-align: middle;">
+                                  <table cellpadding="0" cellspacing="0" border="0" style="vertical-align: -webkit-baseline-middle; font-size: medium; font-family: Arial;">
+                                    <tbody>
+                                      <tr>
+                                        <td style="vertical-align: bottom;">
+                                          <span style="display: inline-block; background-color: rgb(248, 98, 149);">
+                                            <img src="https://cdn2.hubspot.net/hubfs/53/tools/email-signature-generator/icons/link-icon-2x.png" alt="website" width="13" style="display: block; background-color: rgb(248, 98, 149);">
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                                <td style="padding: 0px; color: rgb(0, 0, 0);">
+                                  <a href="//www.SmartHire.tn" style="text-decoration: none; color: rgb(0, 0, 0); font-size: 14px;">
+                                    <span>www.SmartHire.tn</span>
+                                  </a>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     `
   }),

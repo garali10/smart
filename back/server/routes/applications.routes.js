@@ -573,7 +573,7 @@ router.delete('/admin/notifications/:notificationId', authMiddleware, authorize(
 // Update application status
 router.patch('/:id/status', authMiddleware, authorize(['hr', 'departmentHead']), async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, departmentHead } = req.body;
     const applicationId = req.params.id;
 
     console.log('Status update request:', {
@@ -672,6 +672,7 @@ router.patch('/:id/status', authMiddleware, authorize(['hr', 'departmentHead']),
           const candidateName = application.user.name || application.name || 'Candidate';
           const jobTitle = application.jobTitle || 'the position';
           const companyName = application.company || application.job?.company || 'Our Company';
+          const departmentHeadName = departmentHead || req.user.name || 'Department Head';
           
           if (!recipientEmail) {
             console.error('Cannot send email notification: No recipient email address available');
@@ -684,7 +685,8 @@ router.patch('/:id/status', authMiddleware, authorize(['hr', 'departmentHead']),
                 candidateName,
                 jobTitle,
                 status,
-                companyName
+                companyName,
+                departmentHeadName
               ]
             );
             console.log('Email notification result:', emailResult);
