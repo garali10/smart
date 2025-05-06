@@ -7,11 +7,14 @@ import Application from '../models/application.model.js';
 import CVAnalysis from '../models/cv-analysis.model.js';
 import Notification from '../models/notification.model.js';
 import cvAnalysisService from '../services/cv-analysis.service.js';
+import googleCalendarService from '../services/googleCalendar.service.js';
 import { authMiddleware, authorize } from '../middleware/auth.middleware.js';
 import mongoose from 'mongoose';
 import Job from '../models/job.model.js';
 import JobListing from '../models/Job.js';
 import { sendEmail, testEmailConnection } from '../utils/emailService.js';
+import dailyService from '../services/daily.service.js';
+import wherebyService from '../services/whereby.service.js';
 
 const router = express.Router();
 
@@ -210,15 +213,32 @@ router.post('/', authMiddleware, upload.single('resume'), async (req, res) => {
       jobTitle: applicationData.jobTitle,
       mbtiType: applicationData.mbtiResult,
       hasResume: !!applicationData.resumeUrl,
-      hasCvAnalysis: !!applicationData.cvAnalysis
+      hasCvAnalysis: !!applicationData.cvAnalysis,
+      department: job.department // Log the department for debugging
     });
     
     // Create and save the application
     try {
       const application = new Application(applicationData);
-          await application.save();
+      await application.save();
+      
+      // Populate the job data to get the department
+      const populatedApplication = await Application.findById(application._id)
+        .populate({
+          path: 'job',
+          select: 'title department company location',
+          populate: {
+            path: 'department',
+            select: 'name'
+          }
+        });
       
       console.log('\nApplication created successfully with ID:', application._id);
+      console.log('Populated job data:', {
+        jobTitle: populatedApplication.job?.title,
+        department: populatedApplication.job?.department?.name,
+        company: populatedApplication.job?.company
+      });
       
       // Create notification for HR
       if (job.postedBy) {
@@ -244,7 +264,7 @@ router.post('/', authMiddleware, upload.single('resume'), async (req, res) => {
         }
       }
       
-      res.status(201).json(application);
+      res.status(201).json(populatedApplication);
     } catch (saveError) {
       console.error('Error saving application:', saveError);
       res.status(500).json({ 
@@ -573,15 +593,10 @@ router.delete('/admin/notifications/:notificationId', authMiddleware, authorize(
 // Update application status
 router.patch('/:id/status', authMiddleware, authorize(['hr', 'departmentHead']), async (req, res) => {
   try {
-    const { status, departmentHead } = req.body;
+    const { status, departmentHead, interviewDate, interviewTime } = req.body;
     const applicationId = req.params.id;
 
-    console.log('Status update request:', {
-      applicationId,
-      newStatus: status,
-      userId: req.user?._id,
-      userRole: req.user?.role
-    });
+    console.log('PATCH /:id/status called', req.body); // Debug log
 
     // Validate request body
     if (!status) {
@@ -600,15 +615,83 @@ router.patch('/:id/status', authMiddleware, authorize(['hr', 'departmentHead']),
       });
     }
 
-    // Find application and update only the status field
-    const application = await Application.findByIdAndUpdate(
-      applicationId,
-      { $set: { status: status } },
-      { 
-        new: true,
-        runValidators: false // Disable validation since we're only updating status
+    // If status is 'interviewed', validate interview details
+    if (status === 'interviewed') {
+      if (!interviewDate || !interviewTime) {
+        return res.status(400).json({
+          success: false,
+          message: 'Interview date and time are required for scheduling an interview'
+        });
       }
-    ).populate('job').populate('user');
+    }
+
+    // Generate meet link if status is 'interviewed'
+    let meetLink = null;
+    let roomName = null;
+    let roomId = null;
+
+    if (status === 'interviewed' && interviewDate && interviewTime) {
+      console.log('Creating Whereby room...'); // Debug log
+      try {
+        // Get the application to access candidate's details
+        const application = await Application.findById(applicationId).populate('user');
+        if (!application) {
+          throw new Error('Application not found');
+        }
+
+        // Create Whereby meeting room
+        const meetingDetails = await wherebyService.createMeeting();
+
+        meetLink = meetingDetails.meetLink;
+        roomName = null; // Whereby does not use roomName
+        roomId = meetingDetails.roomId;
+
+        console.log('Created Whereby meeting:', {
+          meetLink,
+          roomId
+        });
+      } catch (meetingError) {
+        console.error('Error creating video meeting:', meetingError);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to create video meeting link',
+          error: meetingError.message
+        });
+      }
+    } else {
+      console.log('Whereby room creation skipped. Status:', status, 'Date:', interviewDate, 'Time:', interviewTime);
+    }
+
+    // Find application and update status and interview details
+    let updateObj = { status: status };
+    if (status === 'interviewed' && interviewDate && interviewTime) {
+      updateObj.interviewDate = interviewDate;
+      updateObj.interviewTime = interviewTime;
+      updateObj.meetLink = meetLink;
+      updateObj.roomName = roomName;
+      updateObj.roomId = roomId;
+      console.log('Updating application with Whereby link:', meetLink);
+    }
+    else {
+      console.log('Updating application without Whereby link. Status:', status);
+    }
+
+    await Application.findByIdAndUpdate(
+      applicationId,
+      { $set: updateObj },
+      { new: true, runValidators: false }
+    );
+
+    // Now re-fetch the updated application with all fields populated
+    const application = await Application.findById(applicationId)
+      .populate('job')
+      .populate('user');
+    console.log('Fetched application after update:', {
+      meetLink: application.meetLink,
+      interviewDate: application.interviewDate,
+      interviewTime: application.interviewTime,
+      status: application.status
+    });
     
     if (!application) {
       console.log('Application not found:', applicationId);
@@ -618,31 +701,13 @@ router.patch('/:id/status', authMiddleware, authorize(['hr', 'departmentHead']),
       });
     }
 
-    console.log('Application status updated:', {
-      id: application._id,
-      hasUser: !!application.user,
-      userId: application.user?._id,
-      currentStatus: application.status,
-      jobTitle: application.jobTitle,
-      company: application.company,
-      location: application.location
-    });
-
     // Create notification
     if (application.user) {
       try {
-        console.log('Creating notification for application:', {
-          applicationId: application._id,
-          userId: application.user._id,
-          userEmail: application.user.email,
-          oldStatus: application.status,
-          newStatus: status
-        });
-
         const statusMessages = {
           pending: 'Your application is under review',
           shortlisted: 'Congratulations! You have been shortlisted',
-          interviewed: 'Your interview phase has been completed',
+          interviewed: `Your interview has been scheduled for ${interviewDate} at ${interviewTime}. Please join using this link: ${application.meetLink}`,
           joined: 'Welcome aboard! Your application has been accepted',
           rejected: 'Thank you for your interest. We have decided to move forward with other candidates'
         };
@@ -656,52 +721,27 @@ router.patch('/:id/status', authMiddleware, authorize(['hr', 'departmentHead']),
           read: false
         });
 
-        const savedNotification = await notification.save();
-        console.log('Successfully saved notification:', {
-          notificationId: savedNotification._id,
-          userId: savedNotification.userId,
-          createdAt: savedNotification.createdAt
-        });
+        await notification.save();
 
         // Send email notification
-        try {
-          // Get the recipient email either from the populated user or from the application
-          const recipientEmail = application.user.email || application.email;
-          
-          // Ensure we have all required data for the email template
-          const candidateName = application.user.name || application.name || 'Candidate';
-          const jobTitle = application.jobTitle || 'the position';
-          const companyName = application.company || application.job?.company || 'Our Company';
-          const departmentHeadName = departmentHead || req.user.name || 'Department Head';
-          
-          if (!recipientEmail) {
-            console.error('Cannot send email notification: No recipient email address available');
-          } else {
-            console.log('Attempting to send email notification...');
-            const emailResult = await sendEmail(
-              recipientEmail,
-              'applicationStatus',
-              [
-                candidateName,
-                jobTitle,
-                status,
-                companyName,
-                departmentHeadName
-              ]
-            );
-            console.log('Email notification result:', emailResult);
-          }
-        } catch (emailError) {
-          console.error('Error sending email notification:', emailError);
+        if (application.user.email) {
+          await sendEmail(
+            application.user.email,
+            'applicationStatus',
+            [
+              application.user.name || 'Candidate',
+              application.jobTitle,
+              status,
+              application.company,
+              departmentHead,
+              interviewDate,
+              interviewTime,
+              application.meetLink
+            ]
+          );
         }
       } catch (notificationError) {
-        console.error('Error creating notification:', {
-          error: notificationError.message,
-          stack: notificationError.stack,
-          applicationId: application._id,
-          userId: application.user._id,
-          email: application.user.email
-        });
+        console.error('Error handling notifications:', notificationError);
       }
     }
 
@@ -715,7 +755,10 @@ router.patch('/:id/status', authMiddleware, authorize(['hr', 'departmentHead']),
         updatedAt: application.updatedAt,
         jobTitle: application.jobTitle,
         company: application.company,
-        location: application.location
+        location: application.location,
+        interviewDate: application.interviewDate,
+        interviewTime: application.interviewTime,
+        meetLink: application.meetLink
       }
     });
 
@@ -738,7 +781,11 @@ router.get('/', authMiddleware, authorize(['hr', 'departmentHead']), async (req,
     const applications = await Application.find()
       .populate({
         path: 'job',
-        select: 'title department company location type experienceLevel experience description salary status deadline postedDate createdAt image'
+        select: 'title department company location type experienceLevel experience description salary status deadline postedDate createdAt image',
+        populate: {
+          path: 'department',
+          select: 'name'
+        }
       })
       .populate({
         path: 'user',
@@ -768,14 +815,15 @@ router.get('/', authMiddleware, authorize(['hr', 'departmentHead']), async (req,
         id: app._id,
         name: candidateName,
         email: candidateEmail,
-        hasUserRef: !!app.user
+        hasUserRef: !!app.user,
+        department: jobData.department?.name || 'Unknown Department'
       });
       
       return {
         _id: app._id,
         job: app.job?._id || '',
         jobTitle: jobData.title || app.jobTitle || 'Unknown Job',
-        company: jobData.company || jobData.department || app.company || 'Unknown Department',
+        company: jobData.company || jobData.department?.name || app.company || 'Unknown Department',
         location: jobData.location || app.location || 'Unknown Location',
         user: app.user || null,
         name: candidateName,
@@ -788,7 +836,8 @@ router.get('/', authMiddleware, authorize(['hr', 'departmentHead']), async (req,
         createdAt: app.createdAt,
         updatedAt: app.updatedAt,
         joinedDate: app.joinedDate || null,
-        analysis: app.cvAnalysis?.analysis || null // Include analysis if available
+        analysis: app.cvAnalysis?.analysis || null, // Include analysis if available
+        department: jobData.department?.name || 'Unknown Department' // Add explicit department field
       };
     });
 
@@ -1439,6 +1488,31 @@ router.put('/:id/status', authMiddleware, authorize(['admin', 'hr']), async (req
     res.json(application);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+});
+
+// Test Daily.co configuration
+router.get('/test-daily', authMiddleware, authorize(['hr', 'departmentHead']), async (req, res) => {
+  try {
+    console.log('Testing Daily.co configuration...');
+    
+    // Create a test meeting
+    const meetingDetails = await dailyService.createMeeting('test-meeting');
+    
+    console.log('Successfully created test meeting:', meetingDetails);
+    
+    res.json({
+      success: true,
+      message: 'Daily.co configuration is working correctly',
+      meetingDetails
+    });
+  } catch (error) {
+    console.error('Error testing Daily.co configuration:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error testing Daily.co configuration',
+      error: error.message
+    });
   }
 });
 
