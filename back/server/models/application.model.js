@@ -85,6 +85,34 @@ const applicationSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
+  },
+  meetLink: {
+    type: String,
+    default: null
+  },
+  roomName: {
+    type: String,
+    default: null
+  },
+  roomId: {
+    type: String,
+    default: null
+  },
+  interviewDate: {
+    type: String,
+    default: null
+  },
+  interviewTime: {
+    type: String,
+    default: null
+  },
+  eventId: {
+    type: String,
+    default: null
+  },
+  eventLink: {
+    type: String,
+    default: null
   }
 });
 

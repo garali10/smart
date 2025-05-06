@@ -6,6 +6,8 @@ import axios from 'axios';
 import { Application } from '../../types/application';
 import ApplicationProfile from "../../components/ApplicationProfile/ApplicationProfile";
 import { FaMedal, FaTrophy, FaTrash, FaChartBar, FaChartPie, FaUserFriends } from 'react-icons/fa';
+import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
 
 // Eye icon component
 const EyeIcon = () => (
@@ -501,13 +503,31 @@ const StatusPopup = ({
                   {new Date(application.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => onViewApplication(application)}
-                    className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                    title="View Application"
-                  >
-                    <EyeIcon />
-                  </button>
+                  <div className="d-flex gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedApplication(application);
+                        setShowStatusModal(true);
+                      }}
+                      className="btn btn-sm btn-primary"
+                    >
+                      Change Status
+                    </button>
+                    <button
+                      onClick={() => handleViewApplication(application)}
+                      className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      title="View Application"
+                    >
+                      <EyeIcon />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCandidate(application)}
+                      className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      title="Delete Candidate"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -1039,6 +1059,11 @@ export default function Home() {
   const [rankedApplications, setRankedApplications] = useState<any[]>([]);
   const [rankingsLoading, setRankingsLoading] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [newStatus, setNewStatus] = useState('');
+  const [interviewDate, setInterviewDate] = useState('');
+  const [interviewTime, setInterviewTime] = useState('');
+  const [showApplicationProfile, setShowApplicationProfile] = useState(false);
 
   // Helper function to determine job department from job title
   const getJobDepartment = (jobTitle: string): string => {
@@ -1811,13 +1836,15 @@ export default function Home() {
     fetchApplications();
   };
 
-  const handleViewApplication = (application: any) => {
-    // If we have a ranked candidate with the applicationId field, fetch the full application
-    if (application.applicationId) {
-      fetchApplicationById(application.applicationId);
-    } else {
-      // Otherwise use the application object directly
-    setSelectedApplication(application);
+  const handleViewApplication = async (application: Application) => {
+    try {
+      const fetchedApplication = await fetchApplicationById(application._id);
+      if (fetchedApplication) {
+        setSelectedApplication(fetchedApplication);
+        setShowApplicationProfile(true);
+      }
+    } catch (error) {
+      console.error('Error fetching application:', error);
     }
   };
 
@@ -3229,6 +3256,39 @@ export default function Home() {
     }
   };
 
+  const handleStatusChange = async () => {
+    if (!selectedApplication) return;
+
+    try {
+      const response = await axios.put(
+        `http://localhost:5001/api/applications/${selectedApplication._id}/status`,
+        {
+          status: newStatus,
+          departmentHead: user?.name,
+          ...(newStatus === 'interviewed' && {
+            interviewDate,
+            interviewTime
+          })
+        }
+      );
+
+      if (response.status === 200) {
+        // Update the application in the state
+        setApplications(applications.map(app => 
+          app._id === selectedApplication._id 
+            ? { ...app, status: newStatus, interviewDate, interviewTime, meetLink: response.data.meetLink }
+            : app
+        ));
+        setShowStatusModal(false);
+        setNewStatus('');
+        setInterviewDate('');
+        setInterviewTime('');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
+
   return (
     <>
       <PageMeta
@@ -3451,7 +3511,7 @@ export default function Home() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {getJobDepartment(application.jobTitle)}
+                          {application.job?.department || application.company || getJobDepartment(application.jobTitle)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -3463,14 +3523,14 @@ export default function Home() {
                         {new Date(application.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleViewApplication(application)}
-                          className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                          title="View Application"
-                        >
-                          <EyeIcon />
-                        </button>
+                        <div className="d-flex gap-2">
+                          <button
+                            onClick={() => handleViewApplication(application)}
+                            className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                            title="View Application"
+                          >
+                            <EyeIcon />
+                          </button>
                           <button
                             onClick={() => handleDeleteCandidate(application)}
                             className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
@@ -3532,6 +3592,131 @@ export default function Home() {
           onClose={handleCloseProfile}
           onStatusUpdate={handleApplicationUpdate}
           userRole={userRole}
+          onStatusChange={async (newStatus, interviewDate, interviewTime) => {
+            try {
+              const response = await axios.put(
+                `http://localhost:5001/api/applications/${selectedApplication._id}/status`,
+                {
+                  status: newStatus,
+                  departmentHead: user?.name,
+                  ...(newStatus === 'interviewed' && {
+                    interviewDate,
+                    interviewTime
+                  })
+                }
+              );
+
+              if (response.status === 200) {
+                // Update the application in the state
+                setApplications(applications.map(app => 
+                  app._id === selectedApplication._id 
+                    ? { ...app, status: newStatus, interviewDate, interviewTime, meetLink: response.data.meetLink }
+                    : app
+                ));
+                setShowApplicationProfile(false);
+              }
+            } catch (error) {
+              console.error('Error updating status:', error);
+              alert('Failed to update status. Please try again.');
+            }
+          }}
+        />
+      )}
+
+      {/* Status Update Modal */}
+      <Modal show={showStatusModal} onHide={() => setShowStatusModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Update Application Status</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>New Status</Form.Label>
+              <Form.Select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+              >
+                <option value="">Select Status</option>
+                <option value="pending">Pending</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="interviewed">Interviewed</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+              </Form.Select>
+            </Form.Group>
+
+            {newStatus === 'interviewed' && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label>Interview Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={interviewDate}
+                    onChange={(e) => setInterviewDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Interview Time</Form.Label>
+                  <Form.Control
+                    type="time"
+                    value={interviewTime}
+                    onChange={(e) => setInterviewTime(e.target.value)}
+                    required
+                  />
+                </Form.Group>
+              </>
+            )}
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowStatusModal(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleStatusChange}
+            disabled={!newStatus || (newStatus === 'interviewed' && (!interviewDate || !interviewTime))}
+          >
+            Update Status
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {showApplicationProfile && selectedApplication && (
+        <ApplicationProfile
+          application={selectedApplication}
+          onClose={handleCloseProfile}
+          onUpdate={handleApplicationUpdate}
+          onStatusChange={async (newStatus, interviewDate, interviewTime) => {
+            try {
+              const response = await axios.put(
+                `http://localhost:5001/api/applications/${selectedApplication._id}/status`,
+                {
+                  status: newStatus,
+                  departmentHead: user?.name,
+                  ...(newStatus === 'interviewed' && {
+                    interviewDate,
+                    interviewTime
+                  })
+                }
+              );
+
+              if (response.status === 200) {
+                // Update the application in the state
+                setApplications(applications.map(app => 
+                  app._id === selectedApplication._id 
+                    ? { ...app, status: newStatus, interviewDate, interviewTime, meetLink: response.data.meetLink }
+                    : app
+                ));
+                setShowApplicationProfile(false);
+              }
+            } catch (error) {
+              console.error('Error updating status:', error);
+              alert('Failed to update status. Please try again.');
+            }
+          }}
         />
       )}
     </>

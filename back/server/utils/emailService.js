@@ -76,7 +76,7 @@ transporter.verify(function(error, success) {
 
 // Email templates
 const emailTemplates = {
-  applicationStatus: (candidateName, jobTitle, status, companyName, departmentHead) => ({
+  applicationStatus: (candidateName, jobTitle, status, companyName, departmentHead, interviewDate, interviewTime, meetLink) => ({
     subject: `Application Status Update - ${jobTitle}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -87,6 +87,15 @@ const emailTemplates = {
         <p>Dear ${candidateName},</p>
         <p>We would like to inform you about the status of your application for the position of ${jobTitle} at ${companyName}.</p>
         <p>Your application status has been updated to: <strong>${status}</strong></p>
+        ${status === 'interviewed' ? `
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #2c3e50; margin-top: 0;">Interview Details</h3>
+            <p><strong>Date:</strong> ${interviewDate}</p>
+            <p><strong>Time:</strong> ${interviewTime}</p>
+            <p><strong>Meeting Link:</strong> <a href="${meetLink}" style="color: #3498db; text-decoration: none;">${meetLink}</a></p>
+            <p style="margin-top: 15px; color: #666;">Please join the meeting 5 minutes before the scheduled time.</p>
+          </div>
+        ` : ''}
         <p>If you have any questions or need further information, please don't hesitate to contact us.</p>
         <div style="margin-top: 40px;">
           <table cellpadding="0" cellspacing="0" border="0" style="vertical-align: -webkit-baseline-middle; font-size: medium; font-family: Arial;">

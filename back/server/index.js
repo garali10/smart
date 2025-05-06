@@ -17,6 +17,7 @@ import multer from 'multer';
 import testRoutes from './routes/test.routes.js';
 import fs from 'fs';
 import { dirname } from 'path';
+import chatbotRoutes from './routes/chatbot.routes.js';
 
 // Import models
 import './models/job.model.js';
@@ -176,6 +177,7 @@ app.use('/api/candidates', candidateRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationsRoutes);
+app.use('/api/chat', chatbotRoutes);
 
 // Simple test route
 app.get('/test', (req, res) => {

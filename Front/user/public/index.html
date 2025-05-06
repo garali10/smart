@@ -48,4 +48,22 @@
   <div id="root"></div>
   <script type="text/javascript" src="js/jquery.1.11.1.js"></script>
   <script type="text/javascript" src="js/bootstrap.js"></script>
+
+  <!-- Chatwoot Widget -->
+  <script>
+    (function(d,t) {
+      var BASE_URL="https://app.chatwoot.com";
+      var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+      g.src=BASE_URL+"/packs/js/sdk.js";
+      g.defer = true;
+      g.async = true;
+      s.parentNode.insertBefore(g,s);
+      g.onload=function(){
+        window.chatwootSDK.run({
+          websiteToken: 'SAvrqmVhfBpK6TTgJggW75pr',
+          baseUrl: BASE_URL
+        })
+      }
+    })(document,"script");
+  </script>
 </body>
