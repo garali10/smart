@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
@@ -17,16 +17,20 @@ export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    
     try {
       console.log('Attempting login with:', { email, password });
       
       // Make direct API call first to check credentials
       const response = await axios.post('http://localhost:5001/api/auth/login', {
         email,
-        password,
+        password
       });
 
       console.log('Login response:', response.data);
@@ -50,6 +54,8 @@ export default function SignInForm() {
       setError(err.response?.data?.message || "Login failed");
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -198,8 +204,8 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button type="submit" className="w-full" size="sm">
-                    Sign in
+                  <Button type="submit" className="w-full" size="sm" disabled={isLoading}>
+                    {isLoading ? "Verifying..." : "Sign in"}
                   </Button>
                 </div>
               </div>

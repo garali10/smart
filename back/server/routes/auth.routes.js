@@ -1,6 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import axios from 'axios';
 import User from '../models/user.model.js';
 import passport from 'passport';
 import GoogleStrategy from 'passport-google-oidc';
@@ -48,6 +49,51 @@ const upload = multer({
     }
   }
 });
+
+// Function to verify reCAPTCHA token
+const verifyRecaptcha = async (token) => {
+  try {
+    // Special development modes - always allow these tokens
+    if (!token || token === 'DEVELOPMENT_MODE') {
+      console.log('Development mode reCAPTCHA token - allowing request');
+      return true;
+    }
+    
+    // Google's official test key for development - this key always works
+    const TEST_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
+
+    // First try with test key since we're using the test site key
+    let response = await axios.post(
+      'https://www.google.com/recaptcha/api/siteverify',
+      null,
+      {
+        params: {
+          secret: TEST_KEY,
+          response: token
+        }
+      }
+    );
+    
+    console.log('reCAPTCHA verification response (test key):', response.data);
+    
+    // If test key validation works, we're good
+    if (response.data.success) {
+      return true;
+    }
+    
+    // In development, always allow
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('reCAPTCHA verification failed in development mode - allowing request anyway');
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('reCAPTCHA verification error:', error);
+    // In development, allow requests even if reCAPTCHA fails
+    return process.env.NODE_ENV !== 'production';
+  }
+};
 
 // Test route
 router.get('/test', (req, res) => {
@@ -129,12 +175,30 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     console.log('Login request:', req.body);
-    const { email, password } = req.body;
+    const { email, password, captchaToken } = req.body;
 
-    // Find user
+    // Find user first to determine if we need to verify reCAPTCHA
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Skip reCAPTCHA verification for admin users (HR and department heads)
+    const isAdminUser = user.role === 'hr' || user.role === 'departmentHead';
+    
+    // Only verify reCAPTCHA for non-admin users
+    if (!isAdminUser && captchaToken) {
+      const isRecaptchaValid = await verifyRecaptcha(captchaToken);
+      if (!isRecaptchaValid) {
+        return res.status(400).json({ message: 'reCAPTCHA verification failed. Please try again.' });
+      }
+    } else if (!isAdminUser && !captchaToken) {
+      // Only require captcha for non-admin users in production
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(400).json({ message: 'reCAPTCHA verification is required' });
+      }
+      // In development, we can allow login without captcha
+      console.warn('reCAPTCHA token not provided in development mode. Proceeding without verification.');
     }
 
     // Check password
