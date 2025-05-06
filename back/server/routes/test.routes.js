@@ -62,6 +62,51 @@ router.get('/status/user', authMiddleware, async (req, res) => {
   }
 });
 
+// NEW ROUTE: Get MBTI test session for a specific user by userId (for HR/admin)
+router.get('/sessions/user/:userId', authMiddleware, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`Admin/HR fetching MBTI test session for user: ${userId}`);
+    
+    // Validate the userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid user ID format'
+      });
+    }
+    
+    // Find the most recent completed test session for the specified user
+    const testSession = await TestSession.findOne({
+      userId: userId,
+      status: 'completed'
+    }).sort({ updatedAt: -1 });
+    
+    if (!testSession) {
+      console.log(`No completed test session found for user: ${userId}`);
+      return res.status(200).json({
+        status: 'not_started',
+        message: 'User has not completed an MBTI test'
+      });
+    }
+    
+    console.log(`Found completed test session for user ${userId}:`, testSession._id);
+    return res.status(200).json({
+      status: 'completed',
+      completedAt: testSession.updatedAt,
+      lastScores: testSession.lastScores,
+      testId: testSession.testId
+    });
+  } catch (error) {
+    console.error(`Error fetching MBTI test session for user ${req.params.userId}:`, error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to retrieve MBTI test session',
+      error: error.message
+    });
+  }
+});
+
 // Simple test route
 router.get('/test', (req, res) => {
   res.json({ message: 'Test route working' });
