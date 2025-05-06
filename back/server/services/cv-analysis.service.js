@@ -474,7 +474,7 @@ class CVAnalysisService {
             if (matchedProgramming.length === 0) {
                 // Check for general development terms
                 if (lowerText.includes('web development') || lowerText.includes('software development')) {
-                    matchedProgramming.push(
+                matchedProgramming.push(
                         { name: 'JavaScript', confidence: 0.8 },
                         { name: 'HTML/CSS', confidence: 0.8 }
                     );
@@ -742,10 +742,10 @@ class CVAnalysisService {
         try {
             // First try to find an explicit skills section
             const skillsSectionRegex = /(?:skills|technical skills|core competencies|expertise|proficiencies)\s*[:\-\n]+\s*([\s\S]*?)(?:\n\s*\n|education|work experience|employment|profile|projects|certifications|languages|interests|hobbies|references|$)/i;
-            const match = text.match(skillsSectionRegex);
+        const match = text.match(skillsSectionRegex);
             
             // Process if we find a skills section
-            if (match && match[1]) {
+        if (match && match[1]) {
                 // Split by commas, bullets, or newlines, trim, and filter out empty
                 const rawSkills = match[1].split(/,|\n|•|\*|-|\/|\|/).map(s => s.trim()).filter(Boolean);
                 
@@ -1220,16 +1220,16 @@ class CVAnalysisService {
             }
 
             // Method 2: Date analysis from dates
-            const yearPattern = /\b(19|20)\d{2}\b/g;
+                const yearPattern = /\b(19|20)\d{2}\b/g;
             const allText = dates.join(' ') + ' ' + text;
             const years = Array.from(allText.matchAll(yearPattern))
-                .map(match => parseInt(match[0]))
+                    .map(match => parseInt(match[0]))
                 .filter(year => year <= currentYear && year >= 1950) // Realistic range
-                .sort();
+                    .sort();
 
-            if (years.length >= 2) {
-                const earliestYear = years[0];
-                const latestYear = years[years.length - 1];
+                if (years.length >= 2) {
+                    const earliestYear = years[0];
+                    const latestYear = years[years.length - 1];
                 if (latestYear - earliestYear >= 1) {
                     yearsOfExperience = Math.max(0, latestYear - earliestYear);
                 }
@@ -1248,9 +1248,9 @@ class CVAnalysisService {
             for (const pattern of presentPatterns) {
                 const matches = Array.from(text.matchAll(pattern));
                 for (const match of matches) {
-                    const startYear = parseInt(match[1]);
+                const startYear = parseInt(match[1]);
                     if (startYear > 1950 && startYear <= currentYear) {
-                        totalExperience += currentYear - startYear;
+                totalExperience += currentYear - startYear;
                     }
                 }
             }

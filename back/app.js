@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.routes.js';
 import jobsRoutes from './server/routes/jobs.routes.js';
 import applicationsRoutes from './server/routes/applications.routes.js';
 import testRoutes from './server/routes/test.routes.js';
+import scoresRoutes from './server/routes/scores.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +46,7 @@ app.use('/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/applications', applicationsRoutes);
 app.use('/api/tests', testRoutes);
+app.use('/api/scores', scoresRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
