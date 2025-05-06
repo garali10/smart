@@ -115,6 +115,10 @@ const Navigation = () => {
 
   const handleNotificationClick = async (notification) => {
     try {
+      console.log('=== NOTIFICATION CLICKED IN NAVIGATION ===');
+      console.log('Notification:', notification);
+      
+      // First, mark as read in the backend
       if (!notification.read) {
         await axiosInstance.patch(`/applications/notifications/${notification._id}`);
         setNotifications(notifications.map(n => 
@@ -122,8 +126,37 @@ const Navigation = () => {
         ));
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
+      
+      // Check if notification has an applicationId
+      if (notification.applicationId) {
+        console.log('ApplicationID found:', notification.applicationId);
+        
+        // Convert ObjectId to string if needed
+        const applicationId = typeof notification.applicationId === 'object' 
+          ? notification.applicationId.toString() 
+          : notification.applicationId;
+        
+        console.log('Storing application ID:', applicationId);
+        
+        // Store the ID directly in localStorage for the MyApplications component to pick up
+        try {
+          localStorage.setItem('HIGHLIGHT_APP_ID', applicationId);
+          localStorage.setItem('HIGHLIGHT_APP_TIMESTAMP', Date.now().toString());
+          
+          // Close notifications panel
+          setShowNotifications(false);
+          
+          // Force redirect to the applications page
+          console.log('Redirecting to /my-applications');
+          window.location.href = '/my-applications';
+        } catch (error) {
+          console.error('Error storing application ID:', error);
+        }
+      } else {
+        console.error('No applicationId in notification:', notification);
+      }
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error('Error handling notification click:', error);
     }
   };
 

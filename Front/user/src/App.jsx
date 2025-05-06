@@ -132,6 +132,16 @@ const App = () => {
               } 
             />
 
+            {/* Add specific route for the profile/applications path */}
+            <Route 
+              path="/profile/applications" 
+              element={
+                <PrivateRoute>
+                  <MyApplications />
+                </PrivateRoute>
+              } 
+            />
+
             {/* Home route */}
             <Route path="/" element={
               <>
