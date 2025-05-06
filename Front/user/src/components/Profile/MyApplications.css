@@ -70,8 +70,10 @@
 
 .applications-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+  width: 100%;
 }
 
 .application-card {
@@ -82,6 +84,7 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
+  width: 100%;
   height: 100%;
 }
 
@@ -105,35 +108,39 @@
   font-size: 18px;
   font-weight: 600;
   color: #2d3748;
-  margin: 0;
+  margin: 0 0 8px 0;
   line-height: 1.4;
-  flex: 1;
 }
 
 .job-details {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-direction: column;
+  gap: 4px;
   margin-bottom: 12px;
   font-size: 14px;
   color: #4a5568;
 }
 
 .company {
+  display: block;
   font-weight: 500;
+  font-size: 14px;
+  color: #4a5568;
+  margin-bottom: 4px;
 }
 
 .location, .salary {
   display: flex;
   align-items: center;
   gap: 4px;
+  font-size: 16px;
 }
 
 .application-meta {
   display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-  gap: 16px;
+  flex-direction: column;
+  margin-bottom: 12px;
+  gap: 8px;
   font-size: 14px;
 }
 
@@ -146,10 +153,11 @@
 .meta-label {
   font-weight: 500;
   color: #4a5568;
+  width: 65px;
 }
 
 .meta-value {
-  color: #718096;
+  color: #4a5568;
 }
 
 .resume-link {
@@ -166,33 +174,23 @@
 
 .notification-banner {
   margin-top: auto;
-  padding: 12px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.notification-banner.shortlisted {
-  background-color: #ebf8ff;
-  border-left: 4px solid #3182ce;
-  color: #2c5282;
-}
-
-.notification-banner.interviewed {
-  background-color: #faf5ff;
-  border-left: 4px solid #805ad5;
-  color: #553c9a;
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  border-left: 3px solid;
+  background-color: #f0fff4;
+  color: #276749;
 }
 
 .notification-banner.joined {
   background-color: #f0fff4;
-  border-left: 4px solid #38a169;
-  color: #276749;
+  border-left-color: #38a169;
 }
 
 .notification-banner.rejected {
   background-color: #fff5f5;
-  border-left: 4px solid #e53e3e;
+  border-left-color: #e53e3e;
   color: #c53030;
 }
 
@@ -295,6 +293,12 @@
   text-decoration: none;
 }
 
+@media (max-width: 992px) {
+  .applications-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .applications-list {
     grid-template-columns: 1fr;
@@ -334,16 +338,9 @@
   border-radius: 2px;
 }
 
-.applications-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
 .application-image {
   position: relative;
-  height: 220px;
+  height: 180px;
   background-color: #f1f5f9;
   overflow: hidden;
 }
@@ -391,7 +388,7 @@
 }
 
 .application-content {
-  padding: 20px;
+  padding: 16px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -478,38 +475,6 @@
   background-color: #b91c1c;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .my-applications {
-    padding: 2rem 1rem;
-  }
-
-  .my-applications h2 {
-    font-size: 2rem;
-  }
-
-  .applications-list {
-    grid-template-columns: 1fr;
-  }
-
-  .application-card {
-    margin-bottom: 1.5rem;
-  }
-
-  .application-image {
-    height: 180px;
-  }
-
-  .header-main {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .status-badge {
-    align-self: flex-start;
-  }
-}
-
 /* Loading Skeleton Animation */
 @keyframes shimmer {
   0% {
@@ -558,4 +523,126 @@
 
 .my-applications::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
+}
+
+/* Add highlight styling for the application card when opened via notification */
+.highlighted-application {
+  border: 2px solid #457b8c !important;
+  box-shadow: 0 0 20px rgba(69, 123, 140, 0.4) !important;
+  position: relative;
+  z-index: 10;
+}
+
+/* Single application view when coming from notification */
+.applications-list.single-application {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.applications-list.single-application .application-card {
+  width: 90%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.applications-list.single-application .application-image {
+  height: 300px;
+}
+
+.applications-list.single-application .job-title {
+  font-size: 24px;
+}
+
+.applications-list.single-application .company {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.applications-list.single-application .application-content {
+  padding: 24px;
+}
+
+.applications-list.single-application .meta-item {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.applications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.header-title-container {
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+.view-all-button {
+  background-color: #f8f9fa;
+  color: #457b8c;
+  border: 1px solid #d1e7ed;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  right: 0;
+  top: 10px;
+}
+
+.view-all-button:hover {
+  background-color: #e9f5f8;
+  color: #2c5c68;
+  transform: translateY(-1px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.extra-highlight {
+  animation: pulse-highlight 2s ease-in-out !important;
+  transform: scale(1.03) !important;
+  box-shadow: 0 0 30px rgba(69, 123, 140, 0.8) !important;
+  z-index: 10 !important;
+}
+
+@keyframes pulse-highlight {
+  0% { box-shadow: 0 0 20px rgba(69, 123, 140, 0.6); }
+  50% { box-shadow: 0 0 35px rgba(69, 123, 140, 1); }
+  100% { box-shadow: 0 0 20px rgba(69, 123, 140, 0.6); }
+}
+
+.status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-joined {
+  color: #38a169;
+}
+
+.status-pending {
+  color: #d97706;
+}
+
+.status-rejected {
+  color: #e53e3e;
 } 
