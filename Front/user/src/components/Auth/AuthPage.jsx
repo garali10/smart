@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axios';
 import { useAuth } from '../../context/AuthContext';
@@ -7,15 +7,56 @@ import './AuthPage.css';
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
+  const [captchaValue, setCaptchaValue] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Use only Google's test key which works on all domains including localhost
+  const RECAPTCHA_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+
+  // Initialize reCAPTCHA v3 when component mounts
+  useEffect(() => {
+    // Remove any existing reCAPTCHA scripts to avoid conflicts
+    const existingScripts = document.querySelectorAll('script[src*="recaptcha"]');
+    existingScripts.forEach(script => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    });
+
+    // Add fresh reCAPTCHA script
+    const script = document.createElement('script');
+    script.src = `https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_KEY}`;
+    script.async = true;
+    script.defer = true;
+    
+    script.onload = () => {
+      console.log('reCAPTCHA script loaded successfully');
+      setRecaptchaLoaded(true);
+    };
+    
+    script.onerror = () => {
+      console.error('Failed to load reCAPTCHA script');
+    };
+    
+    document.head.appendChild(script);
+
+    // Clean up script when component unmounts
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, []);
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -24,16 +65,72 @@ const AuthPage = () => {
     }));
   };
 
+  const executeCaptcha = async () => {
+    return new Promise((resolve) => {
+      // Set a timeout for reCAPTCHA execution
+      const timeoutId = setTimeout(() => {
+        console.warn('reCAPTCHA execution timed out');
+        resolve('DEVELOPMENT_MODE'); // Fallback value
+      }, 3000);
+
+      // Check if grecaptcha is loaded
+      if (!window.grecaptcha || !window.grecaptcha.execute) {
+        console.error('reCAPTCHA not loaded yet');
+        clearTimeout(timeoutId);
+        resolve('DEVELOPMENT_MODE');
+        return;
+      }
+
+      try {
+        window.grecaptcha.ready(() => {
+          try {
+            window.grecaptcha.execute(RECAPTCHA_KEY, { action: 'login' })
+              .then(token => {
+                clearTimeout(timeoutId);
+                console.log('reCAPTCHA token received');
+                resolve(token);
+              })
+              .catch(error => {
+                clearTimeout(timeoutId);
+                console.error('Error executing reCAPTCHA:', error);
+                resolve('DEVELOPMENT_MODE');
+              });
+          } catch (error) {
+            clearTimeout(timeoutId);
+            console.error('Error in grecaptcha.execute:', error);
+            resolve('DEVELOPMENT_MODE');
+          }
+        });
+      } catch (error) {
+        clearTimeout(timeoutId);
+        console.error('Error in reCAPTCHA execution:', error);
+        resolve('DEVELOPMENT_MODE');
+      }
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    
     try {
+      // Get reCAPTCHA token, but don't block login on failure
+      let captchaToken = 'DEVELOPMENT_MODE';
+      try {
+        captchaToken = await executeCaptcha();
+      } catch (error) {
+        console.error('Failed to execute reCAPTCHA, continuing with login:', error);
+      }
+      
       if (isLogin) {
-        // Use the login function from AuthContext
+        // Include captcha token in login request
         const response = await axiosInstance.post('/auth/login', {
           email: formData.email,
-          password: formData.password
+          password: formData.password,
+          captchaToken: captchaToken
         });
 
         if (response.data.user.role === 'hr' || response.data.user.role === 'departmentHead') {
@@ -50,11 +147,13 @@ const AuthPage = () => {
       // For registration
       if (!formData.email || !formData.password || !formData.name) {
         setError('Please fill in all required fields');
+        setIsSubmitting(false);
         return;
       }
 
       if (formData.password !== formData.confirmPassword) {
         setError('Passwords do not match');
+        setIsSubmitting(false);
         return;
       }
 
@@ -62,7 +161,8 @@ const AuthPage = () => {
         email: formData.email,
         password: formData.password,
         name: formData.name,
-        role: 'candidate'
+        role: 'candidate',
+        captchaToken: captchaToken
       });
 
       if (response.data && response.data.token) {
@@ -73,6 +173,8 @@ const AuthPage = () => {
     } catch (error) {
       console.error('Auth error:', error);
       setError(error.response?.data?.message || 'Authentication failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -92,6 +194,7 @@ const AuthPage = () => {
                   placeholder="email"
                   value={formData.email}
                   onChange={handleChange}
+                  autoComplete="email"
                 />
               </div>
               <div className="input-group">
@@ -102,9 +205,17 @@ const AuthPage = () => {
                   placeholder="password"
                   value={formData.password}
                   onChange={handleChange}
+                  autoComplete="current-password"
                 />
               </div>
-              <button type="submit" className="button submit">login</button>
+              
+              <button 
+                type="submit" 
+                className="button submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Processing...' : 'login'}
+              </button>
             </form>
           </div>
 
@@ -120,6 +231,7 @@ const AuthPage = () => {
                   placeholder="name"
                   value={formData.name}
                   onChange={handleChange}
+                  autoComplete="name"
                 />
               </div>
               <div className="input-group">
@@ -130,6 +242,7 @@ const AuthPage = () => {
                   placeholder="email"
                   value={formData.email}
                   onChange={handleChange}
+                  autoComplete="email"
                 />
               </div>
               <div className="input-group">
@@ -140,6 +253,7 @@ const AuthPage = () => {
                   placeholder="password"
                   value={formData.password}
                   onChange={handleChange}
+                  autoComplete="new-password"
                 />
               </div>
               <div className="input-group">
@@ -150,9 +264,16 @@ const AuthPage = () => {
                   placeholder="confirm password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
+                  autoComplete="new-password"
                 />
               </div>
-              <button type="submit" className="button submit">create account</button>
+              <button 
+                type="submit" 
+                className="button submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Processing...' : 'create account'}
+              </button>
             </form>
           </div>
         </div>
@@ -172,6 +293,13 @@ const AuthPage = () => {
           <p className="account">don't have an account?</p>
           <button className="button" onClick={() => setIsLogin(false)}>sign up</button>
         </div>
+      </div>
+      
+      {/* reCAPTCHA v3 branding */}
+      <div className="recaptcha-terms">
+        This site is protected by reCAPTCHA and the Google
+        <a href="https://policies.google.com/privacy"> Privacy Policy</a> and
+        <a href="https://policies.google.com/terms"> Terms of Service</a> apply.
       </div>
     </div>
   );

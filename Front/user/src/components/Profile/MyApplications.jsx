@@ -203,7 +203,6 @@ const MyApplications = () => {
                     </span>
                   </div>
                   <div className="job-details">
-                    <span className="company">{application.company}</span>
                     <span className="location">📍 {application.location}</span>
                     {application.salary && application.salary.min > 0 && (
                       <span className="salary">

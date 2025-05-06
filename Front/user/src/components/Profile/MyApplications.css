@@ -121,6 +121,31 @@
 
 .company {
   font-weight: 500;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  display: inline;
+  color: #4a5568;
+}
+
+.department {
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  display: inline;
+  color: #4a5568;
+}
+
+/* Remove any cloud-like styling that might be present */
+.job-details span {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
 }
 
 .location, .salary {
