@@ -422,7 +422,6 @@ const MyApplications = () => {
                 <div className="application-content">
                   <h3 className="job-title">{application.jobTitle}</h3>
                   <div className="job-details">
-                    <span className="company">{application.company}</span>
                     <span className="location">📍 {application.location}</span>
                   </div>
                   

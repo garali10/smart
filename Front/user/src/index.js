@@ -1,18 +1,35 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { AuthProvider } from './context/AuthContext';
+import './i18n'; // Import i18n configuration
+
+// Loader component for Suspense fallback
+const Loader = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh',
+    fontSize: '20px',
+    color: '#333'
+  }}>
+    Loading...
+  </div>
+);
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
+    <Suspense fallback={<Loader />}>
+      <BrowserRouter>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    </Suspense>
   </React.StrictMode>,
   document.getElementById('root')
 );

@@ -4,6 +4,9 @@ import './ApplicationProfile.css';
 import { FaTimes } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { jwtDecode } from 'jwt-decode';
+import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 
 interface ApplicationProfileProps {
   application: {
@@ -24,6 +27,7 @@ interface ApplicationProfileProps {
   onClose: () => void;
   onStatusUpdate: (applicationId: string, updatedApplication: any) => void;
   userRole: string;
+  onStatusChange: (newStatus: string, interviewDate?: string, interviewTime?: string) => void;
 }
 
 interface CVAnalysis {
@@ -66,7 +70,7 @@ interface CVAnalysis {
   };
 }
 
-const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, onClose, onStatusUpdate, userRole }) => {
+const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, onClose, onStatusUpdate, userRole, onStatusChange }) => {
   const [status, setStatus] = useState(application.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
@@ -74,7 +78,12 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, on
   const [cvAnalysis, setCvAnalysis] = useState<CVAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const { } = useAuth();
+  const { user } = useAuth();
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showInterviewModal, setShowInterviewModal] = useState(false);
+  const [newStatus, setNewStatus] = useState('');
+  const [interviewDate, setInterviewDate] = useState('');
+  const [interviewTime, setInterviewTime] = useState('');
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -132,13 +141,20 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, on
     }
   };
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = async () => {
+    if (newStatus === 'interviewed' && (!interviewDate || !interviewTime)) {
+      alert('Please provide both interview date and time');
+      return;
+    }
     try {
       setIsUpdating(true);
       console.log('Attempting to update status:', {
         applicationId: application._id,
         currentStatus: status,
-        newStatus: newStatus
+        newStatus: newStatus,
+        departmentHead: user?.name,
+        interviewDate,
+        interviewTime
       });
 
       const token = localStorage.getItem('token');
@@ -148,10 +164,14 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, on
 
       const response = await api.patch(
         `/applications/${application._id}/status`,
-        { status: newStatus },
+        { 
+          status: newStatus,
+          departmentHead: user?.name,
+          interviewDate: interviewDate,
+          interviewTime: interviewTime
+        },
         {
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
           }
         }
@@ -163,8 +183,19 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, on
         setStatus(newStatus);
         onStatusUpdate(application._id, {
           ...application,
-          status: newStatus
+          status: newStatus,
+          interviewDate: interviewDate,
+          interviewTime: interviewTime,
+          meetLink: response.data.application.meetLink
         });
+        if (onStatusChange) {
+          onStatusChange(newStatus, interviewDate, interviewTime);
+        }
+        setShowStatusModal(false);
+        setShowInterviewModal(false);
+        setNewStatus('');
+        setInterviewDate('');
+        setInterviewTime('');
       } else {
         throw new Error(response.data.message || 'Failed to update status');
       }
@@ -637,7 +668,14 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, on
                   {statusOptions.map((option) => (
                     <button
                       key={option.value}
-                      onClick={() => handleStatusChange(option.value)}
+                      onClick={() => {
+                        setNewStatus(option.value);
+                        if (option.value === 'interviewed') {
+                          setShowInterviewModal(true);
+                        } else {
+                          handleStatusChange();
+                        }
+                      }}
                       disabled={isUpdating}
                       className={`w-full py-2 px-4 rounded-lg transition-colors ${
                         status === option.value
@@ -728,6 +766,77 @@ const ApplicationProfile: React.FC<ApplicationProfileProps> = ({ application, on
         </div>
 
         {cvAnalysis && renderAnalysisResults()}
+
+        {/* Interview Scheduling Modal */}
+        <Modal 
+          show={showInterviewModal} 
+          onHide={() => {
+            setShowInterviewModal(false);
+            setNewStatus('');
+            setInterviewDate('');
+            setInterviewTime('');
+          }}
+          centered
+          className="status-modal"
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Schedule Interview</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Interview Date</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={interviewDate}
+                  onChange={(e) => setInterviewDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  required
+                  className="form-control"
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Interview Time</Form.Label>
+                <Form.Control
+                  type="time"
+                  value={interviewTime}
+                  onChange={(e) => setInterviewTime(e.target.value)}
+                  required
+                  className="form-control"
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button 
+              variant="secondary" 
+              onClick={() => {
+                setShowInterviewModal(false);
+                setNewStatus('');
+                setInterviewDate('');
+                setInterviewTime('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={() => {
+                if (!interviewDate || !interviewTime) {
+                  alert('Please provide both interview date and time');
+                  return;
+                }
+                handleStatusChange();
+                setShowInterviewModal(false);
+              }}
+              disabled={!interviewDate || !interviewTime}
+            >
+              Schedule Interview
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );
@@ -781,7 +890,7 @@ const getToolInfo = (toolName: string): { icon: React.ReactNode, category: strin
   if (toolLower.includes('wordpress') || toolLower.includes('webflow') || toolLower.includes('wix')) {
     return {
       icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clipRule="evenodd" />
+              <path fillRule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.572-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clipRule="evenodd" />
             </svg>,
       category: 'Web Development'
     };

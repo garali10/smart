@@ -1,11 +1,15 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export const Features = (props) => {
+  const { t } = useTranslation();
+  
   return (
     <div id="features" className="text-center">
       <div className="container">
         <div className="col-md-10 col-md-offset-1 section-title">
-          <h2>Features</h2>
+          <h2>{t('features.title')}</h2>
+          <p>{t('features.description')}</p>
         </div>
         <div className="row">
           {props.data
@@ -17,7 +21,7 @@ export const Features = (props) => {
                   <p>{d.text}</p>
                 </div>
               ))
-            : "Loading..."}
+            : t('common.loading')}
         </div>
       </div>
     </div>

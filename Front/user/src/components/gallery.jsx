@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import JobCard from './JobCard';
 import './gallery.css';
+import { useTranslation } from "react-i18next";
 
 export const Gallery = () => {
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,7 +28,7 @@ export const Gallery = () => {
         }
       } catch (err) {
         if (isMounted) {
-          setError('Failed to fetch jobs');
+          setError(t('jobs.error'));
           setLoading(false);
         }
       }
@@ -37,7 +39,7 @@ export const Gallery = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [t]);
 
   // Function to get default image based on department
   const getDefaultImage = (department) => {
@@ -64,17 +66,17 @@ export const Gallery = () => {
     <div id="portfolio" className="text-center">
       <div className="container">
         <div className="section-title">
-          <h2>Job Opportunities</h2>
-          <p>Explore our latest job openings and find your perfect role</p>
+          <h2>{t('jobs.title')}</h2>
+          <p>{t('jobs.description')}</p>
         </div>
         <div className="job-listings-container">
           {loading ? (
-            <div className="text-center">Loading...</div>
+            <div className="text-center">{t('jobs.loading')}</div>
           ) : error ? (
             <div className="text-center text-red-600">{error}</div>
           ) : jobs.length === 0 ? (
             <div className="text-center text-gray-500">
-              No jobs available at the moment
+              {t('jobs.noJobs')}
             </div>
           ) : (
             <div className="job-grid">

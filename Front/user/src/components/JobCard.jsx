@@ -1,12 +1,130 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import JobApplicationForm from './JobApplicationForm';
 import './JobCard.css';
+import { FaHeart, FaRegHeart, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 
 const JobCard = ({ job }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isApplyMode, setIsApplyMode] = useState(false);
   const [applicationSuccess, setApplicationSuccess] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isReading, setIsReading] = useState(false);
+  const [speech, setSpeech] = useState(null);
+  const [voices, setVoices] = useState([]);
+
+  // Load available voices when component mounts
+  useEffect(() => {
+    // Function to load and set available voices
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      if (availableVoices.length > 0) {
+        setVoices(availableVoices);
+        console.log('Voices loaded:', availableVoices.length);
+      }
+    };
+
+    // Load voices initially
+    loadVoices();
+
+    // Chrome requires the voiceschanged event to get voices
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    // Cleanup
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  // Check if job is in favorites when component mounts
+  useEffect(() => {
+    const favoritesFromStorage = JSON.parse(localStorage.getItem('favoriteJobs') || '[]');
+    setIsFavorite(favoritesFromStorage.some(favJob => favJob._id === job._id));
+  }, [job._id]);
+
+  // Function to handle text-to-speech
+  const handleTextToSpeech = () => {
+    if (isReading) {
+      // Stop reading if already in progress
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+      return;
+    }
+
+    // Start reading the job description
+    const description = job.description || 'No description available';
+    const utterance = new SpeechSynthesisUtterance(description);
+    
+    // Set English voice if available
+    const englishVoice = voices.find(voice => 
+      voice.lang.includes('en-') && !voice.name.includes('Google')
+    ) || 
+    voices.find(voice => voice.lang.includes('en-')) || 
+    voices[0];
+
+    if (englishVoice) {
+      console.log('Using voice:', englishVoice.name);
+      utterance.voice = englishVoice;
+      utterance.lang = englishVoice.lang;
+    }
+    
+    // Adjust speech parameters for better clarity
+    utterance.rate = 0.9; // Slightly slower
+    utterance.pitch = 1;
+    
+    // Set handlers
+    utterance.onend = () => {
+      setIsReading(false);
+    };
+    
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error:', event);
+      setIsReading(false);
+    };
+    
+    // Save reference to be able to stop it later
+    setSpeech(utterance);
+    
+    // Start speaking
+    window.speechSynthesis.speak(utterance);
+    setIsReading(true);
+  };
+
+  // Ensure speech is canceled when modal closes
+  useEffect(() => {
+    if (!isModalOpen && isReading) {
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+    }
+  }, [isModalOpen, isReading]);
+
+  // Toggle favorite status
+  const toggleFavorite = (e) => {
+    e.stopPropagation(); // Prevent card click event
+    
+    const favorites = JSON.parse(localStorage.getItem('favoriteJobs') || '[]');
+    
+    if (isFavorite) {
+      // Remove from favorites
+      const updatedFavorites = favorites.filter(favJob => favJob._id !== job._id);
+      localStorage.setItem('favoriteJobs', JSON.stringify(updatedFavorites));
+    } else {
+      // Add to favorites
+      favorites.push(job);
+      localStorage.setItem('favoriteJobs', JSON.stringify(favorites));
+    }
+    
+    setIsFavorite(!isFavorite);
+  };
+
+  // Ensure job data is properly structured
+  const jobData = {
+    ...job,
+    company: 'Cloud',
+    type: job.type || 'Full Time',
+    location: job.location || 'Remote',
+  };
 
   // Map departments to category images
   const categoryImages = {
@@ -25,7 +143,7 @@ const JobCard = ({ job }) => {
     return categoryImages[departmentKey] || defaultImage;
   };
   
-  const imageSrc = getImageSrc(job); // Calculate image source
+  const imageSrc = getImageSrc(jobData); // Calculate image source
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -42,28 +160,36 @@ const JobCard = ({ job }) => {
   const handleApplicationSuccess = () => {
     setApplicationSuccess(true);
     setIsApplyMode(false);
+    setHasApplied(true);
   };
 
   return (
     <>
       <div className="job-card">
         <div className="job-card-image">
-          <img src={imageSrc} alt={job.title || 'Job Category'} />
-          <div className="job-type-badge">{job.type || 'Full Time'}</div>
+          <img src={imageSrc} alt={jobData.title || 'Job Category'} />
+          <div className="job-type-badge">{jobData.type || 'Full Time'}</div>
+          <button 
+            className="favorite-btn" 
+            onClick={toggleFavorite}
+            title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            {isFavorite ? <FaHeart className="favorite-icon active" /> : <FaRegHeart className="favorite-icon" />}
+          </button>
         </div>
         <div className="job-card-content">
-          <div className="job-category">{job.department || 'General'}</div>
-          <h3 className="job-title">{job.title || 'Untitled Position'}</h3>
+          <div className="job-category">{jobData.department || 'General'}</div>
+          <h3 className="job-title">{jobData.title || 'Untitled Position'}</h3>
           <p className="job-description">
-            {job.description?.substring(0, 100) || 'No description available'}...
+            {jobData.description?.substring(0, 100) || 'No description available'}...
           </p>
           <div className="job-meta">
             <div className="job-location">
               <i className="fa fa-map-marker"></i>
-              {job.location || 'Location N/A'}
+              {jobData.location || 'Location N/A'}
             </div>
             <div className="job-date">
-              Posted: {formatDate(job.postedDate)}
+              Posted: {formatDate(jobData.postedDate)}
             </div>
           </div>
           <button onClick={() => setIsModalOpen(true)} className="view-job-btn">
@@ -79,7 +205,7 @@ const JobCard = ({ job }) => {
       }}>
         {isApplyMode ? (
           <JobApplicationForm 
-            job={job} 
+            job={jobData} 
             onClose={() => setIsApplyMode(false)} 
             onSuccess={handleApplicationSuccess}
           />
@@ -87,7 +213,7 @@ const JobCard = ({ job }) => {
           <div className="application-success">
             <div className="success-icon">✓</div>
             <h2>Application Submitted!</h2>
-            <p>Thank you for applying to {job.title}. Your application has been received.</p>
+            <p>Thank you for applying to {jobData.title}. Your application has been received.</p>
             <p>We will review your credentials and contact you if your qualifications match our needs.</p>
             <button 
               className="close-btn" 
@@ -103,52 +229,74 @@ const JobCard = ({ job }) => {
           <div className="job-details">
             <div className="job-details-header">
               <div className="job-image">
-                <img src={imageSrc} alt={job.title || 'Job Category'} />
-                <div className="job-type-badge">{job.type || 'Full Time'}</div>
+                <img src={imageSrc} alt={jobData.title || 'Job Category'} />
+                <div className="job-type-badge">{jobData.type || 'Full Time'}</div>
               </div>
-              <h2>{job.title}</h2>
+              <h2>{jobData.title}</h2>
               <div className="job-meta-info">
                 <div className="meta-item">
                   <i className="fas fa-building"></i>
-                  <span>{job.department || 'General'}</span>
+                  <span>{jobData.department || 'General'}</span>
                 </div>
                 <div className="meta-item">
                   <i className="fas fa-map-marker-alt"></i>
-                  <span>{job.location || 'Location N/A'}</span>
+                  <span>{jobData.location || 'Location N/A'}</span>
                 </div>
                 <div className="meta-item">
                   <i className="fas fa-briefcase"></i>
-                  <span>{job.type || 'Full Time'}</span>
+                  <span>{jobData.type || 'Full Time'}</span>
                 </div>
                 <div className="meta-item">
                   <i className="fas fa-calendar"></i>
-                  <span>Posted: {formatDate(job.postedDate)}</span>
+                  <span>Posted: {formatDate(jobData.postedDate)}</span>
                 </div>
               </div>
               <div className="salary-range">
                 <i className="fas fa-money-bill-wave mr-2"></i>
-                Salary Range: {formatSalary(job.salary)} per year
+                Salary Range: {formatSalary(jobData.salary)} per year
               </div>
             </div>
 
             <div className="job-description">
+              <div className="description-header">
               <h3>Job Description</h3>
-              <p>{job.description || 'No description available'}</p>
+                <button 
+                  className={`text-to-speech-btn ${isReading ? 'reading' : ''}`}
+                  onClick={handleTextToSpeech}
+                  title={isReading ? "Stop reading" : "Read description aloud"}
+                  aria-label={isReading ? "Stop reading" : "Read description aloud"}
+                >
+                  {isReading ? <FaVolumeMute size={12} /> : <FaVolumeUp size={12} />}
+                </button>
+              </div>
+              <p>{jobData.description || 'No description available'}</p>
             </div>
 
             <div className="job-description">
               <h3>Required Experience</h3>
-              <p>{job.experience || 'Experience requirements not specified'}</p>
+              <p>{jobData.experience || 'Experience requirements not specified'}</p>
             </div>
 
             <div className="application-deadline">
               <i className="fas fa-clock mr-2"></i>
-              Application Deadline: {formatDate(job.deadline)}
+              Application Deadline: {formatDate(jobData.deadline)}
             </div>
+
+            {hasApplied && (
+              <div style={{
+                color: '#22c55e',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                margin: '10px 0'
+              }}>
+                Applied
+              </div>
+            )}
 
             <button
               className="apply-button"
               onClick={() => setIsApplyMode(true)}
+              disabled={hasApplied}
             >
               Apply Now
             </button>

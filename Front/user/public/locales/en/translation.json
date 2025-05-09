@@ -1,0 +1,38 @@
+{
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "jobs": "Jobs",
+    "myApplications": "My Applications",
+    "favorites": "Favorites",
+    "mbtiTest": "MBTI Test",
+    "contact": "Contact",
+    "login": "Login",
+    "logout": "Logout",
+    "notifications": "Notifications",
+    "noNotifications": "No new notifications",
+    "searchPlaceholder": "Search for country or language..."
+  },
+  "favorites": {
+    "title": "My Favorites",
+    "count": "{{count}}",
+    "clearAll": "Clear all favorites",
+    "empty": "No Favorite Jobs Yet",
+    "emptyDesc": "Browse job opportunities and click the heart icon to add them to your favorites.",
+    "exploreJobs": "Explore Jobs"
+  },
+  "auth": {
+    "pleaseLogin": "Please Login",
+    "loginRequired": "You need to be logged in to view your favorite jobs."
+  },
+  "common": {
+    "loading": "Loading",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete"
+  }
+} 

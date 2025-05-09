@@ -1,6 +1,9 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
-export const Header = (props) => {
+export const Header = () => {
+  const { t } = useTranslation();
+  
   return (
     <header id="header">
       <div className="intro">
@@ -9,15 +12,15 @@ export const Header = (props) => {
             <div className="row">
               <div className="col-md-8 col-md-offset-2 intro-text">
                 <h1>
-                  {props.data ? props.data.title : "Loading"}
-                  <span></span>
+                  {t('welcome.title')}
+                  <span style={{ color: 'white' }}>{t('welcome.subtitle')}</span>
                 </h1>
-                <p>{props.data ? props.data.paragraph : "Loading"}</p>
+                <p>{t('welcome.description')}</p>
                 <a
                   href="#features"
                   className="btn btn-custom btn-lg page-scroll"
                 >
-                  Learn More
+                  {t('welcome.learnMore')}
                 </a>{" "}
               </div>
             </div>

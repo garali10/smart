@@ -11,3 +11,24 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* RTL Support */
+html[dir="rtl"] body {
+  font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+html[dir="rtl"] * {
+  letter-spacing: 0;
+}
+
+/* Transition for language changes */
+body {
+  transition: all 0.3s ease;
+}
+
+/* Language-specific font size adjustments */
+html[lang="ar"] {
+  font-size: 110%; /* Slightly larger for Arabic */
+}

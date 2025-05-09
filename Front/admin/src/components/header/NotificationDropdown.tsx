@@ -72,6 +72,12 @@ export default function NotificationDropdown() {
       const token = localStorage.getItem('token');
       console.log('1. Token available:', !!token);
       
+      // If token is missing, don't attempt the request
+      if (!token) {
+        console.log('No authentication token found, skipping notification fetch');
+        return;
+      }
+      
       const response = await axios.get<Notification[]>(`${API_BASE_URL}/applications/notifications`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -179,12 +185,61 @@ export default function NotificationDropdown() {
       console.log('7. Notifications state updated');
     } catch (error) {
       console.error('ERROR: Error fetching notifications:', error);
+      
       if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
         console.error('Axios error details:', {
-          status: error.response?.status,
+          status,
           statusText: error.response?.statusText,
           data: error.response?.data
         });
+        
+        // Handle 401 Unauthorized error specifically
+        if (status === 401) {
+          console.log('Authentication error: Token may have expired');
+          
+          // Attempt to refresh the token if we have a refresh mechanism
+          try {
+            // Option 1: Try to refresh token if you have a refresh endpoint
+            // This requires your backend to support token refresh
+            /*
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (refreshToken) {
+              console.log('Attempting to refresh token...');
+              const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+                refreshToken
+              });
+              
+              if (refreshResponse.data && refreshResponse.data.token) {
+                console.log('Token refreshed successfully');
+                localStorage.setItem('token', refreshResponse.data.token);
+                // Retry fetching notifications with the new token
+                fetchNotifications();
+                return;
+              }
+            }
+            */
+            
+            // Option 2: For simpler implementations, you might want to redirect to login
+            // or simply clear notifications and wait for user to login again
+            console.log('Clearing notifications due to auth error');
+            setNotifications([]);
+            previousNotificationsRef.current = [];
+            
+            // Optional: alert the user or redirect to login
+            // window.location.href = '/login';
+          } catch (refreshError) {
+            console.error('Failed to refresh token:', refreshError);
+            // Clear notifications if refresh fails
+            setNotifications([]);
+            previousNotificationsRef.current = [];
+          }
+        }
+      } else {
+        // Generic error handling for non-Axios errors
+        console.error('Unknown error type:', error);
+        // Keep the existing notifications rather than clearing them
+        // for non-auth related errors
       }
     }
   };

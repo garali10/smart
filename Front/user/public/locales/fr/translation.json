@@ -1,0 +1,38 @@
+{
+  "navigation": {
+    "home": "Accueil",
+    "about": "À propos",
+    "services": "Services",
+    "jobs": "Emplois",
+    "myApplications": "Mes candidatures",
+    "favorites": "Favoris",
+    "mbtiTest": "Test MBTI",
+    "contact": "Contact",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "notifications": "Notifications",
+    "noNotifications": "Pas de nouvelles notifications",
+    "searchPlaceholder": "Rechercher un pays ou une langue..."
+  },
+  "favorites": {
+    "title": "Mes Favoris",
+    "count": "{{count}}",
+    "clearAll": "Supprimer tous les favoris",
+    "empty": "Pas encore d'emplois favoris",
+    "emptyDesc": "Parcourez les offres d'emploi et cliquez sur l'icône cœur pour les ajouter à vos favoris.",
+    "exploreJobs": "Explorer les emplois"
+  },
+  "auth": {
+    "pleaseLogin": "Veuillez vous connecter",
+    "loginRequired": "Vous devez être connecté pour voir vos emplois favoris."
+  },
+  "common": {
+    "loading": "Chargement",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "delete": "Supprimer"
+  }
+} 

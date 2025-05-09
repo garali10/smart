@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUserCircle, FaBell, FaTimes } from 'react-icons/fa';
+import { FaUserCircle, FaBell, FaTimes, FaSearch, FaGlobe, FaAngleDown } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import axiosInstance from '../../utils/axios';
 import { playNotificationSound } from '../../utils/notificationSound';
 import './Navigation.css';
+import { useTranslation } from 'react-i18next';
 
 const Navigation = () => {
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
@@ -15,6 +17,41 @@ const Navigation = () => {
   const notificationRef = useRef(null);
   const lastFetchTimeRef = useRef(Date.now());
   const knownNotificationsRef = useRef(new Map());
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const languageDropdownRef = useRef(null);
+
+  const languages = [
+    { code: 'en', name: 'ENGLISH' },
+    { code: 'fr', name: 'FRANÇAIS' },
+    { code: 'ar', name: 'العربية', dir: 'rtl' }
+  ];
+
+  // Use current language from i18n
+  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+
+  // Function to change language
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng.code);
+    setShowLanguageDropdown(false);
+    
+    // Set RTL direction for Arabic
+    if (lng.dir === 'rtl') {
+      document.documentElement.dir = 'rtl';
+      document.body.classList.add('rtl-layout');
+    } else {
+      document.documentElement.dir = 'ltr';
+      document.body.classList.remove('rtl-layout');
+    }
+  };
+
+  // Filter languages based on search
+  const filteredLanguages = searchTerm 
+    ? languages.filter(lang => 
+        lang.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lang.code.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : languages;
 
   const fetchNotifications = async () => {
     try {
@@ -108,6 +145,9 @@ const Navigation = () => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) {
+        setShowLanguageDropdown(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -184,6 +224,46 @@ const Navigation = () => {
     window.location.href = '/mbti-simple';
   };
 
+  // Language selector component to avoid duplication
+  const LanguageSelector = () => (
+    <div className="language-selector-wrapper" ref={languageDropdownRef}>
+      <button 
+        className="language-selector-button"
+        onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+      >
+        <FaGlobe size={14} />
+        <span className="current-language">{currentLanguage.code.toUpperCase()}</span>
+      </button>
+      
+      {showLanguageDropdown && (
+        <div className="language-dropdown">
+          <div className="language-search">
+            <FaSearch className="search-icon" />
+            <input 
+              type="text" 
+              placeholder={t('navigation.searchPlaceholder')}
+              className="language-search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="language-list">
+            {filteredLanguages.map((language) => (
+              <div 
+                key={language.code} 
+                className={`language-item ${language.code === i18n.language ? 'active' : ''}`}
+                onClick={() => changeLanguage(language)}
+              >
+                <span className="language-code">{language.code.toUpperCase()}</span>
+                <span className="language-name">{language.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <nav className="nav-container">
       <div className="nav-left">
@@ -193,22 +273,23 @@ const Navigation = () => {
       </div>
 
       <div className="nav-middle">
-        <Link to="/" className="nav-link">Home</Link>
-        <Link to="/#about" className="nav-link">About</Link>
-        <Link to="/#services" className="nav-link">Services</Link>
-        <Link to="/#portfolio" className="nav-link">Jobs</Link>
+        <Link to="/" className="nav-link">{t('navigation.home')}</Link>
+        <Link to="/#about" className="nav-link">{t('navigation.about')}</Link>
+        <Link to="/#services" className="nav-link">{t('navigation.services')}</Link>
+        <Link to="/#portfolio" className="nav-link">{t('navigation.jobs')}</Link>
         {isAuthenticated && (
           <>
-            <Link to="/my-applications" className="nav-link">My Applications</Link>
-            <a href="#" onClick={goToMbtiTest} className="nav-link">MBTI Test</a>
+            <Link to="/my-applications" className="nav-link">{t('navigation.myApplications')}</Link>
+            <Link to="/favorites" className="nav-link">{t('navigation.favorites')}</Link>
+            <a href="#" onClick={goToMbtiTest} className="nav-link">{t('navigation.mbtiTest')}</a>
           </>
         )}
-        <Link to="/#contact" className="nav-link">Contact</Link>
+        <Link to="/#contact" className="nav-link">{t('navigation.contact')}</Link>
       </div>
 
       <div className="nav-right">
-        {isAuthenticated ? (
-          <div className="user-menu">
+        <div className="user-menu">
+          {isAuthenticated && (
             <div className="notification-wrapper" ref={notificationRef}>
               <button
                 className="notification-button"
@@ -222,9 +303,9 @@ const Navigation = () => {
               
               {showNotifications && (
                 <div className="notification-dropdown">
-                  <h3 className="notification-header">Notifications</h3>
+                  <h3 className="notification-header">{t('navigation.notifications')}</h3>
                   {notifications.length === 0 ? (
-                    <p className="no-notifications">No new notifications</p>
+                    <p className="no-notifications">{t('navigation.noNotifications')}</p>
                   ) : (
                     <div className="notification-list">
                       {notifications.map(notification => (
@@ -241,7 +322,7 @@ const Navigation = () => {
                           <button
                             className="delete-notification-btn"
                             onClick={(e) => deleteNotification(e, notification._id)}
-                            title="Delete notification"
+                            title={t('common.delete')}
                           >
                             <FaTimes />
                           </button>
@@ -252,20 +333,26 @@ const Navigation = () => {
                 </div>
               )}
             </div>
-            
-            <Link to="/profile" className="profile-icon">
-              <FaUserCircle size={24} />
-              {user?.name && <span className="user-name">{user.name}</span>}
+          )}
+          
+          <LanguageSelector />
+          
+          {isAuthenticated ? (
+            <>
+              <Link to="/profile" className="profile-icon">
+                <FaUserCircle size={24} />
+                {user?.name && <span className="user-name">{user.name}</span>}
+              </Link>
+              <button onClick={logout} className="logout-button">
+                {t('navigation.logout')}
+              </button>
+            </>
+          ) : (
+            <Link to="/auth" className="login-link">
+              {t('navigation.login')}
             </Link>
-            <button onClick={logout} className="logout-button">
-              Logout
-            </button>
-          </div>
-        ) : (
-          <Link to="/auth" className="login-link">
-            Login
-          </Link>
-        )}
+          )}
+        </div>
       </div>
     </nav>
   );

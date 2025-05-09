@@ -1,0 +1,38 @@
+{
+  "navigation": {
+    "home": "الرئيسية",
+    "about": "من نحن",
+    "services": "خدماتنا",
+    "jobs": "الوظائف",
+    "myApplications": "طلباتي",
+    "favorites": "المفضلة",
+    "mbtiTest": "اختبار MBTI",
+    "contact": "اتصل بنا",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "notifications": "الإشعارات",
+    "noNotifications": "لا توجد إشعارات جديدة",
+    "searchPlaceholder": "البحث عن بلد أو لغة..."
+  },
+  "favorites": {
+    "title": "المفضلة",
+    "count": "{{count}}",
+    "clearAll": "حذف كل المفضلة",
+    "empty": "لا توجد وظائف مفضلة بعد",
+    "emptyDesc": "تصفح فرص العمل واضغط على أيقونة القلب لإضافتها إلى المفضلة.",
+    "exploreJobs": "استكشاف الوظائف"
+  },
+  "auth": {
+    "pleaseLogin": "الرجاء تسجيل الدخول",
+    "loginRequired": "يجب تسجيل الدخول لعرض الوظائف المفضلة."
+  },
+  "common": {
+    "loading": "جاري التحميل",
+    "error": "خطأ",
+    "success": "تم بنجاح",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "delete": "حذف"
+  }
+} 

@@ -24,6 +24,22 @@ const MbtiTest = () => {
   const [results, setResults] = useState(null);
   const [debug, setDebug] = useState({});
   const [apiHealth, setApiHealth] = useState(null);
+  
+  // Check if we should redirect back to job application
+  const shouldReturnToJob = localStorage.getItem('returnToApplication') === 'true';
+  const adjustedReturnToJobId = returnToJobId || (shouldReturnToJob ? localStorage.getItem('pendingJobId') : null);
+  
+  // Add function to handle returning to job application
+  const handleReturnToJob = () => {
+    // Store the step in localStorage so the form can pick it up
+    localStorage.setItem('currentJobApplicationStep', '2');
+    
+    // Add a flag to automatically open the application popup/modal
+    localStorage.setItem('autoOpenJobApplication', 'true');
+    
+    // Navigate to the portfolio section as requested
+    window.location.href = "http://localhost:3000/#portfolio";
+  };
 
   useEffect(() => {
     console.log("MBTI Test useEffect running");
@@ -231,10 +247,6 @@ const MbtiTest = () => {
       'ESFP': 'The Entertainer: Spontaneous enthusiast who brings fun, engagement, and practical help to others.'
     };
     
-    // Check if we should redirect back to job application
-    const shouldReturnToJob = localStorage.getItem('returnToApplication') === 'true';
-    const returnJobId = returnToJobId || (shouldReturnToJob ? localStorage.getItem('pendingJobId') : null);
-    
     return (
       <div className="mbti-results">
         <h2>Your MBTI Test Results</h2>
@@ -288,10 +300,7 @@ const MbtiTest = () => {
           {returnToJobId ? (
             <button 
               className="apply-job-btn"
-              onClick={() => {
-                // Redirect back to job details page with the job ID
-                navigate(`/jobs/${returnToJobId}`);
-              }}
+              onClick={handleReturnToJob}
             >
               Continue with Job Application
             </button>

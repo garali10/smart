@@ -122,4 +122,117 @@
   background-color: #218838;
   text-decoration: none;
   color: white;
+}
+
+/* Status Modal Styles */
+.status-modal {
+  z-index: 9999 !important;
+}
+
+.status-modal .modal-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  z-index: 9999;
+}
+
+.status-modal .modal-content {
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background: white;
+  position: relative;
+  z-index: 9999;
+}
+
+.status-modal .modal-backdrop {
+  z-index: 9998 !important;
+}
+
+.status-modal .modal-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem;
+  background: white;
+}
+
+.status-modal .modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.status-modal .modal-body {
+  padding: 1.5rem;
+  background: white;
+}
+
+.status-modal .form-label {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.status-modal .form-control {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem;
+  width: 100%;
+  font-size: 0.875rem;
+  background: white;
+}
+
+.status-modal .form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.status-modal .modal-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+  background: white;
+}
+
+.status-modal .btn {
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.status-modal .btn-primary {
+  background-color: #6366f1;
+  border-color: #6366f1;
+  color: white;
+}
+
+.status-modal .btn-primary:hover {
+  background-color: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.status-modal .btn-secondary {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.status-modal .btn-secondary:hover {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.status-modal .btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Ensure modal backdrop covers everything */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
 } 

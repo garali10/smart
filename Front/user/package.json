@@ -11,8 +11,13 @@
     "axios": "^1.8.2",
     "emailjs-com": "^2.6.4",
     "formik": "^2.4.6",
+    "i18next": "^25.1.1",
+    "i18next-browser-languagedetector": "^8.1.0",
+    "i18next-http-backend": "^3.0.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-google-recaptcha": "^3.1.0",
+    "react-i18next": "^15.5.1",
     "react-icons": "^4.8.0",
     "react-router-dom": "^6.30.0",
     "react-scripts": "^5.0.1",
@@ -39,5 +44,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "proxy": "http://localhost:5001"
 }

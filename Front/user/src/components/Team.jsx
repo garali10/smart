@@ -1,14 +1,16 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export const Team = (props) => {
+  const { t } = useTranslation();
+  
   return (
     <div id="team" className="text-center">
       <div className="container">
         <div className="col-md-8 col-md-offset-2 section-title">
-          <h2>Meet the Team</h2>
+          <h2>{t('team.title')}</h2>
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit duis sed
-            dapibus leonec.
+            {t('team.description')}
           </p>
         </div>
         <div id="row">

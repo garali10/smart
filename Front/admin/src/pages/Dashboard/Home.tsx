@@ -7,6 +7,11 @@ import { Application } from '../../types/application';
 import ApplicationProfile from "../../components/ApplicationProfile/ApplicationProfile";
 import { FaMedal, FaTrophy, FaTrash, FaChartBar, FaChartPie, FaUserFriends } from 'react-icons/fa';
 
+
+import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
+
+
 // Eye icon component
 const EyeIcon = () => (
   <svg 
@@ -504,13 +509,31 @@ const StatusPopup = ({
                   {new Date(application.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => onViewApplication(application)}
-                    className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                    title="View Application"
-                  >
-                    <EyeIcon />
-                  </button>
+                  <div className="d-flex gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedApplication(application);
+                        setShowStatusModal(true);
+                      }}
+                      className="btn btn-sm btn-primary"
+                    >
+                      Change Status
+                    </button>
+                    <button
+                      onClick={() => handleViewApplication(application)}
+                      className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      title="View Application"
+                    >
+                      <EyeIcon />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCandidate(application)}
+                      className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      title="Delete Candidate"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -684,15 +707,21 @@ const RankingPopup = ({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => onViewApplication(application)}
-                          className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                          title="View Application"
-                        >
-                          <EyeIcon />
-                        </button>
                           <button
-                            onClick={() => onDeleteCandidate(application)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewApplication(application);
+                            }}
+                            className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                            title="View Application"
+                          >
+                            <EyeIcon />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCandidate(application);
+                            }}
                             className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
                             title="Delete Candidate"
                           >
@@ -898,16 +927,22 @@ const DepartmentMatchPopup = ({
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => onViewApplication(application)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewApplication(application);
+                            }}
                             className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
                             title="View Application"
                           >
                             <EyeIcon />
                           </button>
                           <button
-                            onClick={() => onRemoveFromDepartment(application, department)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCandidate(application);
+                            }}
                             className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                            title="Remove from Department"
+                            title="Delete Candidate"
                           >
                             <FaTrash />
                           </button>
@@ -926,22 +961,27 @@ const DepartmentMatchPopup = ({
 };
 
 // Add a FeaturedCandidates component for displaying candidate profiles with images
+
 const FeaturedCandidates = ({ 
-  applications, 
-  onViewApplication,
+  applications,
   showTopCandidates,
-  setShowTopCandidates
+  setShowTopCandidates,
+  onViewApplication,
+  handleDeleteCandidate
 }: { 
   applications: Application[],
-  onViewApplication: (application: Application) => void,
   showTopCandidates: boolean,
-  setShowTopCandidates: (show: boolean) => void
+  setShowTopCandidates: (show: boolean) => void,
+  onViewApplication: (candidate: Application) => void,
+  handleDeleteCandidate: (candidate: Application) => void
 }) => {
+
   // Get the top 8 candidates with the highest scores
   const topCandidates = [...applications]
     .filter(app => app.analysis?.score?.total)
     .sort((a, b) => (b.analysis?.score?.total || 0) - (a.analysis?.score?.total || 0))
     .slice(0, 8);
+
 
   // Helper function to determine job department from job title
   const getJobDepartment = (jobTitle: string): string => {
@@ -982,12 +1022,15 @@ const FeaturedCandidates = ({
           <FaUserFriends className="text-primary" />
           Top Candidates
         </h3>
+
         <button
           onClick={() => setShowTopCandidates(false)}
           className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
         >
           Hide Section
         </button>
+
+
       </div>
       
       <div className="overflow-x-auto">
@@ -1005,6 +1048,12 @@ const FeaturedCandidates = ({
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Score
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Photos
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
               </th>
             </tr>
           </thead>
@@ -1037,6 +1086,21 @@ const FeaturedCandidates = ({
                       </div>
                       <div className="text-xs text-gray-500">
                         {candidate.jobTitle || 'Unknown Position'}
+                        {candidate.analysis?.score?.total && (
+                          <FaMedal 
+                            className={
+                              candidate.analysis.score.total >= 80
+                                ? "text-green-500 ml-2"
+                                : candidate.analysis.score.total >= 60
+                                ? "text-yellow-500 ml-2"
+                                : "text-red-500 ml-2"
+                            } 
+                            size={14}
+                          />
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {getJobDepartment(candidate.jobTitle)}
                       </div>
                     </div>
                   </div>
@@ -1066,6 +1130,33 @@ const FeaturedCandidates = ({
                     </span>
                   </div>
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {Math.floor(Math.random() * 1000) + 1}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewApplication(candidate);
+                      }}
+                      className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      title="View Application"
+                    >
+                      <EyeIcon />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCandidate(candidate);
+                      }}
+                      className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      title="Delete Candidate"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -1090,7 +1181,15 @@ export default function Home() {
   const [rankedApplications, setRankedApplications] = useState<any[]>([]);
   const [rankingsLoading, setRankingsLoading] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
+
   const [showTopCandidates, setShowTopCandidates] = useState(false);
+
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [newStatus, setNewStatus] = useState('');
+  const [interviewDate, setInterviewDate] = useState('');
+  const [interviewTime, setInterviewTime] = useState('');
+  const [showApplicationProfile, setShowApplicationProfile] = useState(false);
+
 
   // Helper function to determine job department from job title
   const getJobDepartment = (jobTitle: string): string => {
@@ -1869,13 +1968,15 @@ export default function Home() {
     fetchApplications();
   };
 
-  const handleViewApplication = (application: any) => {
-    // If we have a ranked candidate with the applicationId field, fetch the full application
-    if (application.applicationId) {
-      fetchApplicationById(application.applicationId);
-    } else {
-      // Otherwise use the application object directly
-    setSelectedApplication(application);
+  const handleViewApplication = async (application: Application) => {
+    try {
+      const fetchedApplication = await fetchApplicationById(application._id);
+      if (fetchedApplication) {
+        setSelectedApplication(fetchedApplication);
+        setShowApplicationProfile(true);
+      }
+    } catch (error) {
+      console.error('Error fetching application:', error);
     }
   };
 
@@ -3287,6 +3388,39 @@ export default function Home() {
     }
   };
 
+  const handleStatusChange = async () => {
+    if (!selectedApplication) return;
+
+    try {
+      const response = await axios.put(
+        `http://localhost:5001/api/applications/${selectedApplication._id}/status`,
+        {
+          status: newStatus,
+          departmentHead: user?.name,
+          ...(newStatus === 'interviewed' && {
+            interviewDate,
+            interviewTime
+          })
+        }
+      );
+
+      if (response.status === 200) {
+        // Update the application in the state
+        setApplications(applications.map(app => 
+          app._id === selectedApplication._id 
+            ? { ...app, status: newStatus, interviewDate, interviewTime, meetLink: response.data.meetLink }
+            : app
+        ));
+        setShowStatusModal(false);
+        setNewStatus('');
+        setInterviewDate('');
+        setInterviewTime('');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
+
   return (
     <>
       <PageMeta
@@ -3317,6 +3451,17 @@ export default function Home() {
       {/* Department Statistics Component */}
       <DepartmentStatistics applications={applications} />
       
+
+
+      {/* Featured Candidates Component */}
+      <FeaturedCandidates 
+        applications={applications} 
+        showTopCandidates={showTopCandidates}
+        setShowTopCandidates={setShowTopCandidates}
+        onViewApplication={handleViewApplication}
+        handleDeleteCandidate={handleDeleteCandidate}
+      />
+
       {/* Department Match Buttons */}
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="text-sm font-medium text-gray-600 self-center">Find department matches:</div>
@@ -3518,14 +3663,14 @@ export default function Home() {
                         {new Date(application.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleViewApplication(application)}
-                          className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                          title="View Application"
-                        >
-                          <EyeIcon />
-                        </button>
+                        <div className="d-flex gap-2">
+                          <button
+                            onClick={() => handleViewApplication(application)}
+                            className="text-primary hover:text-primary/80 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                            title="View Application"
+                          >
+                            <EyeIcon />
+                          </button>
                           <button
                             onClick={() => handleDeleteCandidate(application)}
                             className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
@@ -3587,6 +3732,131 @@ export default function Home() {
           onClose={handleCloseProfile}
           onStatusUpdate={handleApplicationUpdate}
           userRole={userRole}
+          onStatusChange={async (newStatus, interviewDate, interviewTime) => {
+            try {
+              const response = await axios.put(
+                `http://localhost:5001/api/applications/${selectedApplication._id}/status`,
+                {
+                  status: newStatus,
+                  departmentHead: user?.name,
+                  ...(newStatus === 'interviewed' && {
+                    interviewDate,
+                    interviewTime
+                  })
+                }
+              );
+
+              if (response.status === 200) {
+                // Update the application in the state
+                setApplications(applications.map(app => 
+                  app._id === selectedApplication._id 
+                    ? { ...app, status: newStatus, interviewDate, interviewTime, meetLink: response.data.meetLink }
+                    : app
+                ));
+                setShowApplicationProfile(false);
+              }
+            } catch (error) {
+              console.error('Error updating status:', error);
+              alert('Failed to update status. Please try again.');
+            }
+          }}
+        />
+      )}
+
+      {/* Status Update Modal */}
+      <Modal show={showStatusModal} onHide={() => setShowStatusModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Update Application Status</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>New Status</Form.Label>
+              <Form.Select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+              >
+                <option value="">Select Status</option>
+                <option value="pending">Pending</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="interviewed">Interviewed</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+              </Form.Select>
+            </Form.Group>
+
+            {newStatus === 'interviewed' && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label>Interview Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={interviewDate}
+                    onChange={(e) => setInterviewDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Interview Time</Form.Label>
+                  <Form.Control
+                    type="time"
+                    value={interviewTime}
+                    onChange={(e) => setInterviewTime(e.target.value)}
+                    required
+                  />
+                </Form.Group>
+              </>
+            )}
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowStatusModal(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleStatusChange}
+            disabled={!newStatus || (newStatus === 'interviewed' && (!interviewDate || !interviewTime))}
+          >
+            Update Status
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {showApplicationProfile && selectedApplication && (
+        <ApplicationProfile
+          application={selectedApplication}
+          onClose={handleCloseProfile}
+          onUpdate={handleApplicationUpdate}
+          onStatusChange={async (newStatus, interviewDate, interviewTime) => {
+            try {
+              const response = await axios.put(
+                `http://localhost:5001/api/applications/${selectedApplication._id}/status`,
+                {
+                  status: newStatus,
+                  departmentHead: user?.name,
+                  ...(newStatus === 'interviewed' && {
+                    interviewDate,
+                    interviewTime
+                  })
+                }
+              );
+
+              if (response.status === 200) {
+                // Update the application in the state
+                setApplications(applications.map(app => 
+                  app._id === selectedApplication._id 
+                    ? { ...app, status: newStatus, interviewDate, interviewTime, meetLink: response.data.meetLink }
+                    : app
+                ));
+                setShowApplicationProfile(false);
+              }
+            } catch (error) {
+              console.error('Error updating status:', error);
+              alert('Failed to update status. Please try again.');
+            }
+          }}
         />
       )}
     </>

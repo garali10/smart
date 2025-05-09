@@ -16,6 +16,7 @@ import AuthPage from './components/Auth/AuthPage';
 import EditProfile from './components/Profile/EditProfile';
 import UpdatePassword from './components/Profile/UpdatePassword';
 import MyApplications from './components/Profile/MyApplications';
+import Favorites from './pages/Favorites';
 import MbtiTest from './pages/Profile/MbtiTest';
 import MbtiTestSimple from './components/MbtiTestSimple';
 import JsonData from "./data/data.json";
@@ -98,6 +99,16 @@ const App = () => {
               </PrivateRoute>
             } />
             
+            {/* Favorites route */}
+            <Route 
+              path="/favorites" 
+              element={
+                <PrivateRoute>
+                  <Favorites />
+                </PrivateRoute>
+              } 
+            />
+            
             {/* Other protected routes */}
             <Route 
               path="/profile" 
@@ -145,7 +156,7 @@ const App = () => {
             {/* Home route */}
             <Route path="/" element={
               <>
-                <Header data={landingPageData.Header} />
+                <Header />
                 <Features data={landingPageData.Features} />
                 <About data={landingPageData.About} />
                 <Services data={landingPageData.Services} />

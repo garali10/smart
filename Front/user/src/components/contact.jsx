@@ -1,13 +1,16 @@
 import { useState } from "react";
 import emailjs from "emailjs-com";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const initialState = {
   name: "",
   email: "",
   message: "",
 };
+
 export const Contact = (props) => {
+  const { t } = useTranslation();
   const [{ name, email, message }, setState] = useState(initialState);
 
   const handleChange = (e) => {
@@ -42,8 +45,8 @@ export const Contact = (props) => {
           <div className="col-md-8">
             <div className="row">
               <div className="section-title">
-                <h2>Get In Touch</h2>
-                <p>{props.data ? props.data.paragraph : "Loading"}</p>
+                <h2>{t('contact.title')}</h2>
+                <p>{props.data ? props.data.paragraph : t('contact.paragraph')}</p>
               </div>
               <form name="sentMessage" data-validate="true" onSubmit={handleSubmit}>
                 <div className="row">
@@ -54,7 +57,7 @@ export const Contact = (props) => {
                         id="name"
                         name="name"
                         className="form-control"
-                        placeholder="Name"
+                        placeholder={t('contact.name')}
                         required
                         onChange={handleChange}
                       />
@@ -68,7 +71,7 @@ export const Contact = (props) => {
                         id="email"
                         name="email"
                         className="form-control"
-                        placeholder="Email"
+                        placeholder={t('contact.email')}
                         required
                         onChange={handleChange}
                       />
@@ -82,7 +85,7 @@ export const Contact = (props) => {
                     id="message"
                     className="form-control"
                     rows="4"
-                    placeholder="Message"
+                    placeholder={t('contact.message')}
                     required
                     onChange={handleChange}
                   ></textarea>
@@ -90,17 +93,17 @@ export const Contact = (props) => {
                 </div>
                 <div id="success"></div>
                 <button type="submit" className="btn btn-custom btn-lg">
-                  Send Message
+                  {t('contact.send')}
                 </button>
               </form>
             </div>
           </div>
           <div className="col-md-3 col-md-offset-1 contact-info">
             <div className="contact-item">
-              <h3>Contact Info</h3>
+              <h3>{t('contact.contactInfo')}</h3>
               <p>
                 <span>
-                  <i className="fa fa-map-marker"></i> Address
+                  <i className="fa fa-map-marker"></i> {t('contact.address')}
                 </span>
                 {props.data ? props.data.address : "loading"}
               </p>
@@ -108,7 +111,7 @@ export const Contact = (props) => {
             <div className="contact-item">
               <p>
                 <span>
-                  <i className="fa fa-phone"></i> Phone
+                  <i className="fa fa-phone"></i> {t('contact.phone')}
                 </span>{" "}
                 {props.data ? props.data.phone : "loading"}
               </p>
@@ -116,7 +119,7 @@ export const Contact = (props) => {
             <div className="contact-item">
               <p>
                 <span>
-                  <i className="fa fa-envelope-o"></i> Email
+                  <i className="fa fa-envelope-o"></i> {t('contact.email')}
                 </span>{" "}
                 {props.data ? props.data.email : "loading"}
               </p>

@@ -116,6 +116,7 @@ export default function JobManagement() {
                 { value: 'marketing', label: 'Marketing' },
                 { value: 'sales', label: 'Sales' }
               ]}
+              hideDropdown={true}
             />
             <Select
               value={filters.type}

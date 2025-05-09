@@ -55,6 +55,15 @@ const applicationSchema = new mongoose.Schema({
     enum: ['pending', 'shortlisted', 'interviewed', 'joined', 'rejected', 'reviewed', 'accepted'],
     default: 'pending'
   },
+  interviewDate: {
+    type: Date
+  },
+  interviewTime: {
+    type: String
+  },
+  meetLink: {
+    type: String
+  },
   score: {
     type: Number,
     min: 0,
