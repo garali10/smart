@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axios';
 import { useAuth } from '../../context/AuthContext';
 import './AuthPage.css';
+import FaceRecognition from '../FaceRecognition';
+import { FaUser, FaCamera } from 'react-icons/fa';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,6 +18,7 @@ const AuthPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+  const [showFaceRecognition, setShowFaceRecognition] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -126,22 +129,27 @@ const AuthPage = () => {
       }
       
       if (isLogin) {
-        // Include captcha token in login request
-        const response = await axiosInstance.post('/auth/login', {
-          email: formData.email,
-          password: formData.password,
-          captchaToken: captchaToken
-        });
+        try {
+          // Include captcha token in login request
+          const response = await axiosInstance.post('/auth/login', {
+            email: formData.email,
+            password: formData.password,
+            captchaToken: captchaToken
+          });
 
-        if (response.data.user.role === 'hr' || response.data.user.role === 'departmentHead') {
-          window.location.href = 'http://localhost:3001/signin';
+          if (response.data.user.role === 'hr' || response.data.user.role === 'departmentHead') {
+            window.location.href = 'http://localhost:3001/signin';
+            return;
+          }
+
+          // Use the login function for candidates
+          await login(formData.email, formData.password);
+          navigate('/profile');
           return;
+        } catch (loginError) {
+          console.error('Login error:', loginError);
+          throw loginError;
         }
-
-        // Use the login function for candidates
-        await login(formData.email, formData.password);
-        navigate('/profile');
-        return;
       }
 
       // For registration
@@ -184,39 +192,99 @@ const AuthPage = () => {
         <div className={`pinkbox ${!isLogin ? 'move-right' : ''}`}>
           <div className={`signin ${!isLogin ? 'nodisplay' : ''}`}>
             <h1>sign in</h1>
-            <form className="more-padding" onSubmit={handleSubmit}>
-              {error && <div className="error-message">{error}</div>}
-              <div className="input-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  autoComplete="email"
-                />
-              </div>
-              <div className="input-group">
-                <label>Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  autoComplete="current-password"
-                />
-              </div>
-              
-              <button 
-                type="submit" 
-                className="button submit"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Processing...' : 'login'}
-              </button>
-            </form>
+            {!showFaceRecognition ? (
+              <>
+                <div className="login-options">
+                  <button 
+                    className={`login-option-btn active`}
+                    onClick={() => setShowFaceRecognition(false)}
+                  >
+                    <FaUser /> Password
+                  </button>
+                  <button 
+                    className="login-option-btn"
+                    onClick={() => setShowFaceRecognition(true)}
+                  >
+                    <FaCamera /> Face ID
+                  </button>
+                </div>
+                
+                <form className="more-padding" onSubmit={handleSubmit}>
+                  {error && <div className="error-message">{error}</div>}
+                  <div className="input-group">
+                    <label>Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Password</label>
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      autoComplete="current-password"
+                    />
+                  </div>
+                  
+                  <button 
+                    type="submit" 
+                    className="button submit"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Processing...' : 'login'}
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <div className="login-options">
+                  <button 
+                    className="login-option-btn"
+                    onClick={() => setShowFaceRecognition(false)}
+                  >
+                    <FaUser /> Password
+                  </button>
+                  <button 
+                    className="login-option-btn active"
+                    onClick={() => setShowFaceRecognition(true)}
+                  >
+                    <FaCamera /> Face ID
+                  </button>
+                </div>
+                
+                <div className="face-login-container">
+                  <p>Login using face recognition</p>
+                  <FaceRecognition 
+                    onSuccess={(credentials) => {
+                      try {
+                        console.log("Face recognition successful, received credentials:", credentials);
+                        if (!credentials || !credentials.token || !credentials.user) {
+                          console.error("Missing token or user data in credentials");
+                          setError('Face recognition login failed: Missing credentials');
+                          return;
+                        }
+                        
+                        // Call the login function from AuthContext with credentials
+                        login(credentials);
+                        console.log("Login successful, navigating to profile");
+                        navigate('/profile');
+                      } catch (err) {
+                        console.error("Face login error:", err);
+                        setError('Face recognition login failed');
+                      }
+                    }} 
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           <div className={`signup ${isLogin ? 'nodisplay' : ''}`}>

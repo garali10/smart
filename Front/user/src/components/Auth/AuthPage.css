@@ -338,4 +338,75 @@ input[type="date"]::placeholder {
     transform: scale(0.77);
     transform-origin: center;
   }
+}
+
+/* Login options styles */
+.login-options {
+  display: flex;
+  width: 60%;
+  margin: 0 auto 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.login-option-btn {
+  flex: 1;
+  padding: 8px;
+  background-color: var(--white);
+  color: var(--pale);
+  border: 1px solid var(--pale);
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.8em;
+  letter-spacing: 1px;
+}
+
+.login-option-btn.active {
+  background-color: var(--pale);
+  color: var(--white);
+}
+
+.login-option-btn:first-child {
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+}
+
+.login-option-btn:last-child {
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+}
+
+.face-login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  margin-top: 10px;
+}
+
+.face-login-container p {
+  margin-bottom: 15px;
+  color: var(--white);
+}
+
+/* Ensure face recognition fits in the auth container */
+.face-recognition-container {
+  width: 90%;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.signin form {
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.g-recaptcha {
+  transform:scale(0.7);
+  transform-origin:0 0;
+  margin: 10px auto;
 } 

@@ -381,4 +381,28 @@ body.rtl-layout .nav-right {
   background-color: #f0f8ff;
   font-weight: bold;
   border-left: 3px solid #007bff;
-} 
+}
+
+/* Add styles for the logout icon button */
+.logout-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #880808;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.logout-icon-button:hover {
+  background-color: #6b0606;
+  transform: scale(1.05);
+}
+
+/* Add styles for other buttons if they don't exist */ 

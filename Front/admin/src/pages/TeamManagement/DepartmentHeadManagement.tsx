@@ -11,6 +11,7 @@ interface DepartmentHead {
   joinDate: string;
   totalJobs: number;
   totalCandidates: number;
+  banned: boolean;
 }
 
 interface PaginationData {
@@ -25,6 +26,7 @@ const DepartmentHeadManagement = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [banLoading, setBanLoading] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationData>({
     currentPage: 1,
     totalPages: 1,
@@ -112,6 +114,45 @@ const DepartmentHeadManagement = () => {
     }
   };
 
+  const handleToggleBan = async (id: number, currentBanStatus: boolean) => {
+    const action = currentBanStatus ? 'unban' : 'ban';
+    if (!window.confirm(`Are you sure you want to ${action} this Department Head?`)) {
+      return;
+    }
+
+    try {
+      setBanLoading(String(id));
+      setError(null);
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        setError('You must be logged in to perform this action');
+        setBanLoading(null);
+        return;
+      }
+
+      await axios.put(`http://localhost:5001/api/users/${id}/toggle-ban`, {
+        banned: !currentBanStatus
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      fetchDepartmentHeads(pagination.currentPage);
+      
+      setBanLoading(null);
+    } catch (err: any) {
+      console.error(`Error ${currentBanStatus ? 'unbanning' : 'banning'} department head:`, err);
+      if (err.response?.status === 403) {
+        setError(`You do not have permission to ${currentBanStatus ? 'unban' : 'ban'} Department Heads. Please contact your administrator.`);
+      } else {
+        setError(err.response?.data?.message || `Failed to ${currentBanStatus ? 'unban' : 'ban'} department head`);
+      }
+      setBanLoading(null);
+    }
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center p-4">
       <div className="text-lg">Loading...</div>
@@ -146,11 +187,12 @@ const DepartmentHeadManagement = () => {
       </div>
 
       <div className="rounded-sm border border-stroke bg-white shadow-default">
-        <div className="grid grid-cols-6 border-b border-stroke py-4 px-4 dark:border-strokedark">
+        <div className="grid grid-cols-7 border-b border-stroke py-4 px-4 dark:border-strokedark">
           <div className="col-span-2 font-medium">Name</div>
           <div className="font-medium">Role</div>
           <div className="font-medium">Company</div>
           <div className="font-medium">Join Date</div>
+          <div className="font-medium">Status</div>
           <div className="font-medium">Actions</div>
         </div>
 
@@ -162,7 +204,7 @@ const DepartmentHeadManagement = () => {
           departmentHeads.map((head) => (
             <div
               key={head.id}
-              className="grid grid-cols-6 border-b border-stroke py-4 px-4 dark:border-strokedark last:border-b-0"
+              className={`grid grid-cols-7 border-b border-stroke py-4 px-4 dark:border-strokedark last:border-b-0 ${head.banned ? 'bg-red-50' : ''}`}
             >
               <div className="col-span-2">
                 <h5 className="font-medium text-black dark:text-white">
@@ -175,11 +217,29 @@ const DepartmentHeadManagement = () => {
               <div className="flex items-center">
                 {new Date(head.joinDate).toLocaleDateString()}
               </div>
+              <div className="flex items-center">
+                <span className={`px-2 py-1 rounded text-xs ${head.banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                  {head.banned ? 'Banned' : 'Active'}
+                </span>
+              </div>
               <div className="flex items-center space-x-3.5">
+                <button 
+                  className={`hover:text-primary text-sm px-2 py-1 rounded ${head.banned ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-red-100 text-red-600 hover:bg-red-200'} ${banLoading === String(head.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={() => handleToggleBan(head.id, head.banned)}
+                  disabled={banLoading === String(head.id)}
+                  title={head.banned ? 'Unban user' : 'Ban user'}
+                >
+                  {banLoading === String(head.id) ? (
+                    'Processing...'
+                  ) : (
+                    head.banned ? 'Unban' : 'Ban'
+                  )}
+                </button>
                 <button 
                   className={`hover:text-primary ${deleteLoading === String(head.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
                   onClick={() => handleDeleteDepartmentHead(head.id)}
                   disabled={deleteLoading === String(head.id)}
+                  title="Delete user"
                 >
                   {deleteLoading === String(head.id) ? (
                     <span className="text-sm">Deleting...</span>

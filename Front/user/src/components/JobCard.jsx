@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import JobApplicationForm from './JobApplicationForm';
+import JobMap from './JobMap';
+import './JobMap.css';
 import './JobCard.css';
-import { FaHeart, FaRegHeart, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaVolumeUp, FaVolumeMute, FaMapMarkerAlt, FaCalendarAlt, FaClock, FaMapMarkedAlt } from 'react-icons/fa';
 
 const JobCard = ({ job }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,6 +15,7 @@ const JobCard = ({ job }) => {
   const [isReading, setIsReading] = useState(false);
   const [speech, setSpeech] = useState(null);
   const [voices, setVoices] = useState([]);
+  const [showMap, setShowMap] = useState(false);
 
   // Load available voices when component mounts
   useEffect(() => {
@@ -185,12 +188,31 @@ const JobCard = ({ job }) => {
           </p>
           <div className="job-meta">
             <div className="job-location">
-              <i className="fa fa-map-marker"></i>
-              {jobData.location || 'Location N/A'}
+              <FaMapMarkerAlt className="meta-icon" />
+              <span>{jobData.location || 'Location N/A'}</span>
+              <button className="view-map-btn" onClick={(e) => {
+                e.stopPropagation();
+                setShowMap(true);
+              }} style={{ marginLeft: '10px' }}>
+                <FaMapMarkedAlt /> Map
+              </button>
             </div>
             <div className="job-date">
+              <FaCalendarAlt className="meta-icon" />
               Posted: {formatDate(jobData.postedDate)}
             </div>
+          </div>
+          <div className="job-meta">
+            <div className="job-type">
+              <FaClock className="meta-icon" />
+              {jobData.type || 'Full Time'}
+            </div>
+            {jobData.deadline && (
+              <div className="job-deadline">
+                <FaCalendarAlt className="meta-icon" />
+                Due: {formatDate(jobData.deadline)}
+              </div>
+            )}
           </div>
           <button onClick={() => setIsModalOpen(true)} className="view-job-btn">
             Learn More
@@ -235,19 +257,21 @@ const JobCard = ({ job }) => {
               <h2>{jobData.title}</h2>
               <div className="job-meta-info">
                 <div className="meta-item">
-                  <i className="fas fa-building"></i>
-                  <span>{jobData.department || 'General'}</span>
-                </div>
-                <div className="meta-item">
-                  <i className="fas fa-map-marker-alt"></i>
+                  <FaMapMarkerAlt className="meta-icon" />
                   <span>{jobData.location || 'Location N/A'}</span>
+                  <button className="view-map-btn" onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMap(true);
+                  }} style={{ marginLeft: '10px' }}>
+                    <FaMapMarkedAlt /> Map
+                  </button>
                 </div>
                 <div className="meta-item">
-                  <i className="fas fa-briefcase"></i>
+                  <FaClock className="meta-icon" />
                   <span>{jobData.type || 'Full Time'}</span>
                 </div>
                 <div className="meta-item">
-                  <i className="fas fa-calendar"></i>
+                  <FaCalendarAlt className="meta-icon" />
                   <span>Posted: {formatDate(jobData.postedDate)}</span>
                 </div>
               </div>
@@ -269,17 +293,36 @@ const JobCard = ({ job }) => {
                   {isReading ? <FaVolumeMute size={12} /> : <FaVolumeUp size={12} />}
                 </button>
               </div>
-              <p>{jobData.description || 'No description available'}</p>
+              <div className="description-content">
+                <p>{jobData.description || 'No description available'}</p>
+              </div>
             </div>
 
             <div className="job-description">
-              <h3>Required Experience</h3>
-              <p>{jobData.experience || 'Experience requirements not specified'}</p>
+              <div className="description-header">
+                <h3>Required Experience</h3>
+              </div>
+              <div className="experience-content">
+                {jobData.experienceDetails ? (
+                  <div dangerouslySetInnerHTML={{ __html: jobData.experienceDetails }} />
+                ) : jobData.experience ? (
+                  <p style={{ fontWeight: 'bold' }}>{jobData.experience}</p>
+                ) : jobData.experienceLevel ? (
+                  <p style={{ fontWeight: 'bold' }}>{jobData.experienceLevel}</p>
+                ) : (
+                  <p>No specific experience requirements provided.</p>
+                )}
+              </div>
             </div>
 
-            <div className="application-deadline">
-              <i className="fas fa-clock mr-2"></i>
-              Application Deadline: {formatDate(jobData.deadline)}
+            <div className="application-deadline-container">
+              <div className="deadline-header">
+                <FaCalendarAlt className="deadline-icon" />
+                <h3>Application Deadline</h3>
+              </div>
+              <div className="deadline-date">
+                {formatDate(jobData.deadline)}
+              </div>
             </div>
 
             {hasApplied && (
@@ -297,12 +340,20 @@ const JobCard = ({ job }) => {
               className="apply-button"
               onClick={() => setIsApplyMode(true)}
               disabled={hasApplied}
+              style={{ backgroundColor: '#800000', borderColor: '#800000' }}
             >
               Apply Now
             </button>
           </div>
         )}
       </Modal>
+
+      {/* Map Modal */}
+      {jobData && <JobMap 
+        location={jobData.location} 
+        isOpen={showMap} 
+        onClose={() => setShowMap(false)} 
+      />}
     </>
   );
 };

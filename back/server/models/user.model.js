@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['hr', 'departmentHead', 'candidate'],
     default: 'candidate'
+  },
+  banned: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

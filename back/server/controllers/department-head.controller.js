@@ -31,7 +31,7 @@ const departmentHeadController = {
 
       // Get all users who are department heads
       const departmentHeadUsers = await User.find({ role: 'departmentHead' })
-        .select('name email createdAt id')
+        .select('name email createdAt id banned')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -54,7 +54,8 @@ const departmentHeadController = {
             role: 'Department Head',
             joinDate: user.createdAt,
             totalJobs: departmentHead?.posted_jobs?.length || 0,
-            totalCandidates: departmentHead?.candidatList?.length || 0
+            totalCandidates: departmentHead?.candidatList?.length || 0,
+            banned: user.banned || false
           };
         })
       );

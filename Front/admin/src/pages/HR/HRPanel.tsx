@@ -17,6 +17,7 @@ interface Candidate {
   applicationStatus?: string;
   coverLetter?: string;
   phoneNumber?: string;
+
   user?: any;
   mbtiResult?: string;
   mbtiScores?: Record<string, number>;
@@ -38,10 +39,10 @@ const HRPanel: React.FC = () => {
   const [applications, setApplications] = useState<Candidate[]>([]);
   const [uniqueCandidates, setUniqueCandidates] = useState<UniqueCandidate[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mbtiFetching, setMbtiFetching] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCandidate, setSelectedCandidate] = useState<UniqueCandidate | null>(null);
   const [showCandidateModal, setShowCandidateModal] = useState(false);
-  const [mbtiFetching, setMbtiFetching] = useState<boolean>(false);
 
   // Application statuses
   const applicationStatuses = [
@@ -203,6 +204,7 @@ const HRPanel: React.FC = () => {
         });
         
         setUniqueCandidates(Array.from(candidateMap.values()));
+
       } catch (error) {
         console.error('Error fetching candidates:', error);
       } finally {
@@ -226,7 +228,7 @@ const HRPanel: React.FC = () => {
     }
   };
 
-  // Helper function to get profile picture URL 
+  // Add a helper function to get profile picture URL after the formatDate function
   const getProfilePictureUrl = (filename: string | undefined): string => {
     if (!filename) return 'https://via.placeholder.com/40';
     if (filename.startsWith('http')) return filename;
@@ -273,9 +275,8 @@ const HRPanel: React.FC = () => {
   };
 
   // Filter candidates based on search query
-  const filteredCandidates = uniqueCandidates.filter(candidate => {
+  const filteredCandidates = uniqueCandidates.filter((candidate: UniqueCandidate) => {
     if (!searchQuery) return true;
-    
     const query = searchQuery.toLowerCase();
     return (
       candidate.name.toLowerCase().includes(query) ||
@@ -662,7 +663,7 @@ const HRPanel: React.FC = () => {
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">{candidate.name}</div>
                         </div>
-          </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {candidate.email}
@@ -676,18 +677,18 @@ const HRPanel: React.FC = () => {
             </table>
           </div>
         )}
-        </div>
+      </div>
 
       {/* Candidate Profile Modal */}
       {showCandidateModal && selectedCandidate && (
         <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm flex justify-center items-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-3xl mx-4 relative max-h-[90vh] overflow-y-auto">
-                <button
+            <button
               onClick={handleCloseModal}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                >
+            >
               <FaTimes className="w-5 h-5" />
-                </button>
+            </button>
             
             <h2 className="text-2xl font-medium mb-6">Candidate Profile</h2>
             
@@ -853,7 +854,7 @@ const HRPanel: React.FC = () => {
                         <p>No MBTI test results available for this candidate.</p>
                         <div className="flex justify-center gap-4 mt-4">
                           <button 
-                            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                             onClick={() => {
                               // Try to fetch real data
                               setMbtiFetching(true);
@@ -865,7 +866,7 @@ const HRPanel: React.FC = () => {
                             Fetch MBTI Data
                           </button>
                           <button 
-                            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                            className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
                             onClick={() => {
                               // Use mock data for this candidate
                               const mockData = getMockMbtiData(selectedCandidate._id);

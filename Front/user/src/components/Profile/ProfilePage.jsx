@@ -5,7 +5,7 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
-import { FaCamera, FaPen } from 'react-icons/fa';
+import { FaCamera, FaPen, FaUserShield } from 'react-icons/fa';
 import axiosInstance from '../../utils/axios';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorMessage from '../common/ErrorMessage';
@@ -13,6 +13,7 @@ import './ProfilePage.css';
 import { useAuth } from '../../context/AuthContext';
 import ProfileCard from './ProfileCard';
 import MbtiResultsCard from './MbtiResultsCard';
+import FaceRegistration from '../FaceRegistration';
 
 const ProfilePage = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -20,6 +21,8 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showFaceRegistration, setShowFaceRegistration] = useState(false);
+  const [hasFaceData, setHasFaceData] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
@@ -46,6 +49,9 @@ const ProfilePage = () => {
 
     if (isAuthenticated) {
       fetchUserData();
+      // Check if user has face recognition data
+      const faceData = localStorage.getItem('faceDescriptor');
+      setHasFaceData(!!faceData);
     } else {
       navigate('/auth');
     }
@@ -104,6 +110,20 @@ const ProfilePage = () => {
     fileInputRef.current.click();
   };
 
+  const handleFaceRegistrationSuccess = () => {
+    setShowFaceRegistration(false);
+    setHasFaceData(true);
+    setSuccessMessage('Face registration successful! You can now use face recognition to log in.');
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
+  const handleRemoveFaceData = () => {
+    localStorage.removeItem('faceDescriptor');
+    setHasFaceData(false);
+    setSuccessMessage('Face data removed successfully.');
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -150,7 +170,57 @@ const ProfilePage = () => {
           >
             Take MBTI Test
           </button>
+          
+          {hasFaceData ? (
+            <>
+              <button 
+                className="btn btn--red"
+                onClick={handleRemoveFaceData}
+              >
+                <FaUserShield /> Remove Face ID
+              </button>
+              <button 
+                className="btn btn--teal"
+                onClick={() => {
+                  // Save current authentication data for face login
+                  const userData = localStorage.getItem('user');
+                  const token = localStorage.getItem('token');
+                  
+                  if (userData && token) {
+                    localStorage.setItem('faceUserData', userData);
+                    localStorage.setItem('faceToken', token);
+                    setSuccessMessage('Face login data updated. You can now use Face ID to login.');
+                    setTimeout(() => setSuccessMessage(''), 3000);
+                  } else {
+                    setError('Could not update face login data. Please log in again.');
+                    setTimeout(() => setError(''), 3000);
+                  }
+                }}
+              >
+                <FaUserShield /> Update Face Login
+              </button>
+            </>
+          ) : (
+            <button 
+              className="btn btn--orange"
+              onClick={() => setShowFaceRegistration(true)}
+            >
+              <FaUserShield /> Setup Face ID
+            </button>
+          )}
         </div>
+        
+        {showFaceRegistration && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2>Face ID Setup</h2>
+              <FaceRegistration 
+                onSuccess={handleFaceRegistrationSuccess} 
+                onCancel={() => setShowFaceRegistration(false)}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

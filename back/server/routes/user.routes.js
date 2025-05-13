@@ -280,4 +280,56 @@ router.delete('/:id', authMiddleware, authorize(['hr']), async (req, res) => {
   }
 });
 
+// Toggle ban status for a user (HR only)
+router.put('/:id/toggle-ban', authMiddleware, authorize(['hr']), async (req, res) => {
+  try {
+    const { banned } = req.body;
+    
+    if (typeof banned !== 'boolean') {
+      return res.status(400).json({ message: 'Banned status must be a boolean value' });
+    }
+    
+    let user;
+    
+    // Try to find user by numeric ID first
+    user = await User.findOne({ id: req.params.id });
+    
+    // If not found by numeric ID, try MongoDB _id
+    if (!user) {
+      try {
+        user = await User.findById(req.params.id);
+      } catch (error) {
+        // If _id is invalid, continue to next check
+      }
+    }
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Prevent HR users from banning other HR users (only admins should ban HR)
+    if (user.role === 'hr' && req.user.role === 'hr') {
+      return res.status(403).json({ message: 'HR users cannot ban other HR users' });
+    }
+    
+    // Update the banned status
+    user.banned = banned;
+    await user.save();
+    
+    res.json({ 
+      message: banned ? 'User banned successfully' : 'User unbanned successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        banned: user.banned
+      }
+    });
+  } catch (error) {
+    console.error('Error toggling ban status:', error);
+    res.status(500).json({ message: 'Error updating user ban status' });
+  }
+});
+
 export default router; 

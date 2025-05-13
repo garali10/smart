@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import User from '../models/user.model.js';
 
 // Verifies JWT token
 export const authMiddleware = async (req, res, next) => {
@@ -16,7 +17,7 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-
+    
     if (!token) {
       return res.status(401).json({ message: 'Invalid token. Please log in again.' });
     }
@@ -25,11 +26,25 @@ export const authMiddleware = async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
+      // Get full user with ban status
+      const user = await User.findById(decoded.id || decoded._id).select('-password');
+      
+      if (!user) {
+        return res.status(401).json({ message: 'User not found' });
+      }
+      
+      // Check if user is banned
+      if (user.banned) {
+        return res.status(403).json({ message: 'Your account has been banned. Please contact HR for assistance.' });
+      }
+      
       // Set user info in request
       req.user = {
-        _id: decoded.id || decoded._id, // Support both formats
-        id: decoded.id || decoded._id,  // Support both formats
-        role: decoded.role
+        _id: user._id,
+        id: user._id, // Support both formats
+        role: user.role,
+        name: user.name,
+        email: user.email
       };
       
       next();

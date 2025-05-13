@@ -1,0 +1,397 @@
+[
+  {
+    "weights": [
+      {
+        "name": "mobnet0/conv0/filters",
+        "shape": [
+          3,
+          3,
+          3,
+          16
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.005271855067148975,
+          "min": -0.6852411587293667
+        }
+      },
+      {
+        "name": "mobnet0/conv0/bias",
+        "shape": [
+          16
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0037692126085517124,
+          "min": -0.8254275850768749
+        }
+      },
+      {
+        "name": "mobnet0/conv1/depthwise_filter",
+        "shape": [
+          3,
+          3,
+          16,
+          1
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0054857027086278075,
+          "min": -0.7021699866244394
+        }
+      },
+      {
+        "name": "mobnet0/conv1/pointwise_filter",
+        "shape": [
+          1,
+          1,
+          16,
+          32
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.010075518857002258,
+          "min": -1.2996918324733112
+        }
+      },
+      {
+        "name": "mobnet0/conv1/bias",
+        "shape": [
+          32
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.004409176164060527,
+          "min": -0.7274640670699869
+        }
+      },
+      {
+        "name": "mobnet0/conv2/depthwise_filter",
+        "shape": [
+          3,
+          3,
+          32,
+          1
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.004411228055352606,
+          "min": -0.5249161385869801
+        }
+      },
+      {
+        "name": "mobnet0/conv2/pointwise_filter",
+        "shape": [
+          1,
+          1,
+          32,
+          32
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.009782996243165545,
+          "min": -1.311521496984183
+        }
+      },
+      {
+        "name": "mobnet0/conv2/bias",
+        "shape": [
+          32
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.002358799384824466,
+          "min": -0.2453151360217444
+        }
+      },
+      {
+        "name": "mobnet0/conv3/depthwise_filter",
+        "shape": [
+          3,
+          3,
+          32,
+          1
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0025219598225499287,
+          "min": -0.32279485928639086
+        }
+      },
+      {
+        "name": "mobnet0/conv3/pointwise_filter",
+        "shape": [
+          1,
+          1,
+          32,
+          64
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.009942903015619812,
+          "min": -1.3423918571086747
+        }
+      },
+      {
+        "name": "mobnet0/conv3/bias",
+        "shape": [
+          64
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0016145409764263341,
+          "min": -0.23248789659739213
+        }
+      },
+      {
+        "name": "mobnet0/conv4/depthwise_filter",
+        "shape": [
+          3,
+          3,
+          64,
+          1
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0027808524392597285,
+          "min": -0.3336173926762474
+        }
+      },
+      {
+        "name": "mobnet0/conv4/pointwise_filter",
+        "shape": [
+          1,
+          1,
+          64,
+          64
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.012001764031431012,
+          "min": -1.5602296220860316
+        }
+      },
+      {
+        "name": "mobnet0/conv4/bias",
+        "shape": [
+          64
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0016809172232477143,
+          "min": -0.2386901657011754
+        }
+      },
+      {
+        "name": "mobnet0/conv5/depthwise_filter",
+        "shape": [
+          3,
+          3,
+          64,
+          1
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.002662231141598068,
+          "min": -0.28784096529259135
+        }
+      },
+      {
+        "name": "mobnet0/conv5/pointwise_filter",
+        "shape": [
+          1,
+          1,
+          64,
+          128
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.01412210553350733,
+          "min": -1.5675737142593338
+        }
+      },
+      {
+        "name": "mobnet0/conv5/bias",
+        "shape": [
+          128
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.001300578490822883,
+          "min": -0.1898844396601809
+        }
+      },
+      {
+        "name": "mobnet0/conv6/depthwise_filter",
+        "shape": [
+          3,
+          3,
+          128,
+          1
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.002065178438147017,
+          "min": -0.22716962819617186
+        }
+      },
+      {
+        "name": "mobnet0/conv6/pointwise_filter",
+        "shape": [
+          1,
+          1,
+          128,
+          128
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.011227761062711328,
+          "min": -1.5382932355914421
+        }
+      },
+      {
+        "name": "mobnet0/conv6/bias",
+        "shape": [
+          128
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.001423029899598788,
+          "min": -0.19922418594383033
+        }
+      },
+      {
+        "name": "mobnet0/conv7/depthwise_filter",
+        "shape": [
+          3,
+          3,
+          128,
+          1
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0021002136940277257,
+          "min": -0.31923448149221435
+        }
+      },
+      {
+        "name": "mobnet0/conv7/pointwise_filter",
+        "shape": [
+          1,
+          1,
+          128,
+          128
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.010311488731318204,
+          "min": -1.2683931139721392
+        }
+      },
+      {
+        "name": "mobnet0/conv7/bias",
+        "shape": [
+          128
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0013829750528339084,
+          "min": -0.21247315312841388
+        }
+      },
+      {
+        "name": "mobnet0/conv8/depthwise_filter",
+        "shape": [
+          3,
+          3,
+          128,
+          1
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0025816519958936523,
+          "min": -0.31238389550313394
+        }
+      },
+      {
+        "name": "mobnet0/conv8/pointwise_filter",
+        "shape": [
+          1,
+          1,
+          128,
+          256
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.009951309451432866,
+          "min": -1.2738476097834068
+        }
+      },
+      {
+        "name": "mobnet0/conv8/bias",
+        "shape": [
+          256
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0011211913986740128,
+          "min": -0.1593491985917098
+        }
+      },
+      {
+        "name": "fc/weights",
+        "shape": [
+          256,
+          136
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.010005089363581745,
+          "min": -1.3006616172656268
+        }
+      },
+      {
+        "name": "fc/bias",
+        "shape": [
+          136
+        ],
+        "dtype": "float32",
+        "quantization": {
+          "dtype": "uint8",
+          "scale": 0.0006498329487668276,
+          "min": -0.08187895304662028
+        }
+      }
+    ],
+    "paths": [
+      "face_landmark_68_tiny_model-shard1"
+    ]
+  }
+] 

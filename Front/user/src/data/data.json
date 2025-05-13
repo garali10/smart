@@ -131,23 +131,23 @@
   ],
   "Team": [
     {
-      "img": "img/team/01.jpg",
-      "name": "John Doe",
+      "img": "img/team/chaima.jpg",
+      "name": "Chaima Nouali",
       "job": "Director"
     },
     {
-      "img": "img/team/02.jpg",
-      "name": "Mike Doe",
+      "img": "img/team/bechir1.jpeg",
+      "name": "Bechir Garali",
       "job": "Senior Designer"
     },
     {
-      "img": "img/team/03.jpg",
-      "name": "Jane Doe",
+      "img": "img/team/amen.jpg",
+      "name": "Amenallah Belhouichet",
       "job": "Senior Designer"
     },
     {
-      "img": "img/team/04.jpg",
-      "name": "Karen Doe",
+      "img": "img/team/ayoub.jpg",
+      "name": "Ayoub Hanfi",
       "job": "Project Manager"
     }
   ],

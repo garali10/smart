@@ -18,23 +18,60 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (emailOrCredentials, password) => {
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', {
-        email,
-        password,
-      });
+      // Handle case where credentials are passed as separate email and password parameters
+      if (typeof emailOrCredentials === 'string' && password !== undefined) {
+        const email = emailOrCredentials;
+        
+        const response = await axios.post('http://localhost:5001/api/auth/login', {
+          email,
+          password,
+        });
 
-      const { token, user } = response.data;
+        const { token, user } = response.data;
 
-      if (user.role === 'candidate') {
+        if (user.role === 'candidate') {
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(user));
+          setUser(user);
+          setIsAuthenticated(true);
+        }
+
+        return response.data;
+      }
+      
+      // If credentials is an object with email and password, perform traditional login
+      else if (typeof emailOrCredentials === 'object' && emailOrCredentials.email && emailOrCredentials.password) {
+        const credentials = emailOrCredentials;
+        const response = await axios.post('http://localhost:5001/api/auth/login', {
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        const { token, user } = response.data;
+
+        if (user.role === 'candidate') {
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(user));
+          setUser(user);
+          setIsAuthenticated(true);
+        }
+
+        return response.data;
+      } 
+      // If credentials is already a token and user object (from face recognition)
+      else if (typeof emailOrCredentials === 'object' && emailOrCredentials.token && emailOrCredentials.user) {
+        const credentials = emailOrCredentials;
+        const { token, user } = credentials;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
         setIsAuthenticated(true);
+        return { token, user };
       }
-
-      return response.data;
+      
+      throw new Error('Invalid login credentials format');
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -81,6 +118,37 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   };
+  
+  // Register face data for a user
+  const registerFaceData = async (faceDescriptor) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token || !user) {
+        throw new Error('Authentication required');
+      }
+      
+      // In a real app, this would be an API call
+      // await axios.post('http://localhost:5001/api/users/face-recognition', 
+      //   { userId: user.id, faceDescriptor },
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+      
+      // For demo, we'll store in localStorage
+      const faceData = {
+        userId: user.id,
+        username: user.username || user.name,
+        email: user.email,
+        faceDescriptor
+      };
+      
+      localStorage.setItem('faceData', JSON.stringify(faceData));
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Face registration error:', error);
+      throw error;
+    }
+  };
 
   return (
     <AuthContext.Provider value={{ 
@@ -89,6 +157,7 @@ export const AuthProvider = ({ children }) => {
       login, 
       logout,
       updateProfile,
+      registerFaceData,
       loading
     }}>
       {children}

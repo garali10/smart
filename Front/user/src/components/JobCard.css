@@ -83,18 +83,95 @@
     flex-grow: 1;
   }
   
+  /* Improved job description styling */
+  .description-content {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #444;
+    padding: 12px 8px;
+    letter-spacing: 0.3px;
+    font-weight: 600;
+  }
+  
+  .description-content p {
+    font-weight: bold;
+  }
+  
+  .experience-content {
+    padding: 12px 8px;
+    font-size: 18px;
+    line-height: 1.8;
+    color: #444;
+    letter-spacing: 0.3px;
+    font-weight: 600;
+  }
+  
+  .experience-content p {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .experience-list {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin-top: 10px;
+  }
+  
+  .experience-list li {
+    margin-bottom: 12px;
+    color: #444;
+    font-size: 18px;
+    line-height: 1.8;
+  }
+  
+  .description-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+    border-bottom: 2px solid #800000;
+    padding-bottom: 12px;
+  }
+  
+  .description-header h3 {
+    margin: 0;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    color: #333;
+    font-weight: 600;
+  }
+  
+  .modal-content .job-description {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid #eaeaea;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    overflow: visible;
+  }
+  
   .job-meta {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
-    font-size: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
     color: #666;
   }
   
-  .job-location {
+  .job-location, .job-date, .job-type, .job-deadline {
     display: flex;
     align-items: center;
+    gap: 6px;
+  }
+  
+  .meta-icon {
+    color: #800000;
+    font-size: 14px;
+    flex-shrink: 0;
   }
   
   .job-location i {
@@ -147,7 +224,7 @@
     display: block;
     width: 100%;
     padding: 1rem;
-    background-color: #4a90e2;
+    background-color: #800000;
     color: white;
     border: none;
     border-radius: 4px;
@@ -159,7 +236,7 @@
   }
   
   .apply-button:hover {
-    background-color: #3a7bc8;
+    background-color: #600000;
   }
   
   /* Application Success Message Styling */
@@ -196,7 +273,7 @@
   .close-btn {
     margin-top: 1.5rem;
     padding: 0.8rem 2rem;
-    background-color: #4a90e2;
+    background-color: #800000;
     color: white;
     border: none;
     border-radius: 4px;
@@ -206,7 +283,7 @@
   }
   
   .close-btn:hover {
-    background-color: #3a7bc8;
+    background-color: #600000;
   }
   
   .already-applied-text {
@@ -269,20 +346,6 @@
     opacity: 1;
   }
   
-  .description-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    position: relative;
-  }
-  
-  .description-header h3 {
-    margin: 0;
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-  }
-  
   .favorite-btn:hover {
     transform: scale(1.1);
     background: #fff;
@@ -313,4 +376,80 @@
   
   .favorite-btn:hover .favorite-icon.active {
     color: #ff0000;
+  }
+  
+  .job-meta-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 5px 0;
+    flex-wrap: wrap;
+  }
+  
+  .meta-item {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+    margin-bottom: 5px;
+    gap: 8px;
+  }
+  
+  .meta-item .meta-icon {
+    color: #800000;
+    font-size: 16px;
+  }
+  
+  .meta-item span {
+    color: #555;
+    font-size: 14px;
+  }
+  
+  /* Additional styles for better icon alignment */
+  .job-card .job-meta {
+    line-height: 1.2;
+  }
+  
+  .job-card .meta-icon {
+    position: relative;
+    top: 1px;
+  }
+  
+  .job-deadline .meta-icon {
+    color: #e74c3c;
+  }
+  
+  .application-deadline-container {
+    background-color: #fff3f3;
+    border: 1px solid #ffcccb;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .deadline-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .deadline-header h3 {
+    font-size: 18px;
+    color: #800000;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .deadline-icon {
+    color: #800000;
+    font-size: 18px;
+    margin-right: 10px;
+  }
+  
+  .deadline-date {
+    font-size: 20px;
+    font-weight: 700;
+    color: #800000;
   } 

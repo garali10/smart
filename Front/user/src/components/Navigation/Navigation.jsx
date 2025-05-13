@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUserCircle, FaBell, FaTimes, FaSearch, FaGlobe, FaAngleDown } from 'react-icons/fa';
+import { FaUserCircle, FaBell, FaTimes, FaSearch, FaGlobe, FaAngleDown, FaSignOutAlt } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import axiosInstance from '../../utils/axios';
 import { playNotificationSound } from '../../utils/notificationSound';
@@ -288,7 +288,7 @@ const Navigation = () => {
       </div>
 
       <div className="nav-right">
-        <div className="user-menu">
+          <div className="user-menu">
           {isAuthenticated && (
             <div className="notification-wrapper" ref={notificationRef}>
               <button
@@ -336,22 +336,26 @@ const Navigation = () => {
           )}
           
           <LanguageSelector />
-          
+            
           {isAuthenticated ? (
             <>
-              <Link to="/profile" className="profile-icon">
-                <FaUserCircle size={24} />
-                {user?.name && <span className="user-name">{user.name}</span>}
-              </Link>
-              <button onClick={logout} className="logout-button">
-                {t('navigation.logout')}
-              </button>
-            </>
-          ) : (
-            <Link to="/auth" className="login-link">
-              {t('navigation.login')}
+            <Link to="/profile" className="profile-icon">
+              <FaUserCircle size={24} />
+              {user?.name && <span className="user-name">{user.name}</span>}
             </Link>
-          )}
+              <button 
+                onClick={logout} 
+                className="logout-icon-button"
+                title={t('navigation.logout')}
+              >
+                <FaSignOutAlt size={16} />
+            </button>
+            </>
+        ) : (
+          <Link to="/auth" className="login-link">
+              {t('navigation.login')}
+          </Link>
+        )}
         </div>
       </div>
     </nav>

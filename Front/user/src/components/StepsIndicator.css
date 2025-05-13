@@ -58,29 +58,29 @@
 
 /* Active state */
 .step.active .step-number {
-  background-color: #ff4f00;
-  border-color: #ff4f00;
+  background-color: #800000;
+  border-color: #800000;
   color: white;
 }
 
 .step.active .step-label {
-  color: #ff4f00;
+  color: #800000;
   font-weight: 600;
 }
 
 /* Completed state */
 .step.completed .step-number {
-  background-color: #ff4f00;
-  border-color: #ff4f00;
+  background-color: #800000;
+  border-color: #800000;
   color: white;
 }
 
 .step.completed .step-label {
-  color: #ff4f00;
+  color: #800000;
 }
 
 .step-line.completed {
-  background-color: #ff4f00;
+  background-color: #800000;
 }
 
 /* Responsive design */

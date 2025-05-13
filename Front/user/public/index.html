@@ -42,6 +42,35 @@
   <title>A React Landing Page Template</title>
   <meta name="description" content="" />
   <meta name="author" content="@Issaafalkattan" />
+  
+  <!-- Custom styles for Chatwoot -->
+  <style>
+    :root {
+      --cw-primary-color: #800000 !important;
+    }
+    
+    .woot-widget-bubble {
+      background: #800000 !important;
+    }
+    
+    .woot-widget-holder, .woot--bubble-holder {
+      background-color: #800000 !important;
+    }
+    
+    .woot--close-button {
+      background: #800000 !important;
+    }
+    
+    .woot--chat-button {
+      background: #800000 !important;
+    }
+    
+    /* Force color override for the widget bubble */
+    body .woot-widget-bubble__icon {
+      background-color: #800000 !important;
+      fill: white !important;
+    }
+  </style>
 </head>
 
 <body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
@@ -61,9 +90,48 @@
       g.onload=function(){
         window.chatwootSDK.run({
           websiteToken: 'SAvrqmVhfBpK6TTgJggW75pr',
-          baseUrl: BASE_URL
-        })
+          baseUrl: BASE_URL,
+          displayStyle: 'standard',
+          position: 'right',
+          locale: 'fr',
+          launcherTitle: 'Chat with us',
+          showPopoutButton: true,
+          type: 'expanded',
+          expandOnLoad: true,
+          defaultMailbox: 'support',
+          primaryColor: '#800000'
+        });
       }
     })(document,"script");
+  </script>
+  
+  <!-- Ensure Chatwoot loads with page -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        if (typeof window.chatwootSDK === 'undefined') {
+          console.log('Attempting to reload Chatwoot...');
+          var script = document.createElement('script');
+          script.src = "https://app.chatwoot.com/packs/js/sdk.js";
+          script.defer = true;
+          script.async = true;
+          script.onload = function() {
+            if (window.chatwootSDK) {
+              window.chatwootSDK.run({
+                websiteToken: 'SAvrqmVhfBpK6TTgJggW75pr',
+                baseUrl: 'https://app.chatwoot.com',
+                displayStyle: 'standard',
+                position: 'right',
+                locale: 'fr',
+                launcherTitle: 'Chat with us',
+                showPopoutButton: true,
+                primaryColor: '#800000'
+              });
+            }
+          };
+          document.body.appendChild(script);
+        }
+      }, 3000);
+    });
   </script>
 </body>
