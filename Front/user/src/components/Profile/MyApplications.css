@@ -669,4 +669,62 @@
 
 .status-rejected {
   color: #e53e3e;
+}
+
+/* Add these styles to the end of the file for the QR code button */
+
+.qr-button-container {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.qr-code-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.qr-code-button:hover {
+  background-color: #800000;
+  color: white;
+  border-color: #800000;
+}
+
+.qr-code-button svg {
+  font-size: 14px;
+}
+
+/* Ensure the application meta items layout well with the new button */
+.application-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@media (max-width: 768px) {
+  .qr-code-button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .qr-code-button svg {
+    font-size: 12px;
+  }
 } 

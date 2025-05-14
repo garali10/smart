@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { FaQrcode } from 'react-icons/fa';
+import QRCodeModal from '../QRCodeModal';
 import './MyApplications.css';
 
 const MyApplications = () => {
@@ -15,6 +17,8 @@ const MyApplications = () => {
   const [error, setError] = useState(null);
   const [highlightedAppId, setHighlightedAppId] = useState(null);
   const [showSingleApplication, setShowSingleApplication] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState(null);
   const applicationRefs = useRef({});
   const location = useLocation();
   
@@ -335,6 +339,17 @@ const MyApplications = () => {
     window.history.pushState({}, '', '/my-applications');
   };
 
+  // Function to handle QR code button click
+  const handleQrCodeClick = (application) => {
+    setSelectedApplication(application);
+    setQrModalOpen(true);
+  };
+
+  // Function to close the QR code modal
+  const handleCloseQrModal = () => {
+    setQrModalOpen(false);
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="auth-required">
@@ -441,6 +456,15 @@ const MyApplications = () => {
                         View Resume
                       </a>
                     </div>
+                    <div className="meta-item qr-button-container">
+                      <button 
+                        className="qr-code-button"
+                        onClick={() => handleQrCodeClick(application)}
+                        title="View QR Code"
+                      >
+                        <FaQrcode /> QR Code
+                      </button>
+                    </div>
                   </div>
                   
                   {application.status === 'joined' && (
@@ -459,6 +483,14 @@ const MyApplications = () => {
             );
           })}
         </div>
+      )}
+      
+      {selectedApplication && (
+        <QRCodeModal 
+          isOpen={qrModalOpen} 
+          onClose={handleCloseQrModal} 
+          application={selectedApplication} 
+        />
       )}
     </div>
   );

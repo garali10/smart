@@ -19,6 +19,7 @@ import MyApplications from './components/Profile/MyApplications';
 import Favorites from './pages/Favorites';
 import MbtiTest from './pages/Profile/MbtiTest';
 import MbtiTestSimple from './components/MbtiTestSimple';
+import QRCodeLanding from './components/QRCodeLanding';
 import JsonData from "./data/data.json";
 import SmoothScroll from "smooth-scroll";
 import "./App.css";
@@ -73,6 +74,9 @@ const App = () => {
         <Navigation />
         <div className="content">
           <Routes>
+            {/* QR Code Landing Page - accessible without authentication */}
+            <Route path="/qr-code" element={<QRCodeLanding />} />
+            
             {/* Simple MBTI test with no auth protection or nested elements */}
             <Route path="/mbti-simple" element={<MbtiTestSimple />} />
             

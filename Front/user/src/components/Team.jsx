@@ -1,8 +1,26 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { FaWhatsapp } from "react-icons/fa";
+import "./Team.css";
 
 export const Team = (props) => {
   const { t } = useTranslation();
+  
+  // WhatsApp numbers for each team member
+  const whatsappNumbers = {
+    "Chaima Nouali": "50962694",
+    "Bechir Garali": "26455505",
+    "Amenallah Belhouichet": "58287224",
+    "Ayoub Hanfi": "50343139"
+  };
+  
+  // Function to open WhatsApp with the specified number
+  const openWhatsApp = (name) => {
+    if (whatsappNumbers[name]) {
+      const whatsappUrl = `https://wa.me/216${whatsappNumbers[name]}`;
+      window.open(whatsappUrl, '_blank');
+    }
+  };
   
   return (
     <div id="team" className="text-center">
@@ -23,6 +41,15 @@ export const Team = (props) => {
                     <div className="caption">
                       <h4>{d.name}</h4>
                       <p>{d.job}</p>
+                      {whatsappNumbers[d.name] && (
+                        <button 
+                          onClick={() => openWhatsApp(d.name)}
+                          className="whatsapp-btn"
+                          title={`Contact ${d.name} on WhatsApp`}
+                        >
+                          <FaWhatsapp size={20} color="#FF0000" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
