@@ -12,7 +12,7 @@ task tracking, and HR management through a responsive, modular architecture.
 
 
 ## 👩‍🏫 Acknowledgments
-This project was developed under the guidance of Professor Ghada Ben Khalifa
+This project was developed under the guidance of Professor [Ghada Ben Khalifa](https://github.com/BenKhalifaGHADA)
 at Esprit School of Engineering as part of the 4TWIN full-stack training program.
 
 ---
@@ -55,7 +55,7 @@ npm install
 🤝 Contributions
 Feel free to fork the repo, submit pull requests, or open issues.
 
-Made with ❤️ by Chaima Naouali & Bechir Garali & Amenallah Belhouichet & Ayoub Hanfi
+Made with ❤️ by [Chaima Naouali](https://github.com/chaimanaouali) & [Bechir Garali](https://github.com/garali10) & [Amenallah Belhouichet](https://github.com/AmenAllahBelhouichet) & [Ayoub Hanfi](https://github.com/ayoubhanfi)
 
 
 
